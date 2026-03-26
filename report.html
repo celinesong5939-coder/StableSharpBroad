@@ -559,16 +559,36 @@
 
                     reportData.value = {
                         m, s, w, g, code,
-                        archetypeTitle: `${elements[m].char}${elements[s].char}${g === 'male' ? '男' : '女'}`,
-                        sections: {
-                            main: { title: `第一重观测：主核【${elements[m].name}】`, subtitle: 'ABSOLUTE CORE', icon: 'fa-solid fa-cube', content: getMainProfile(m, g, scoresObj), elKey: m },
-                            sub: { title: `第二重观测：副相【${elements[s].name}】的化学反应`, subtitle: 'SOCIAL DISGUISE', icon: 'fa-solid fa-mask', content: getSecondaryInfluence(m, s, g, scoresObj), elKey: s },
-                            missing: { title: `第三重观测：极度缺失【${elements[w].name}】`, subtitle: 'FATAL BLIND SPOT', icon: 'fa-solid fa-link-slash', content: getBlindSpotImpact(w, g, scoresObj), elKey: w }
-                        },
-                        careers: getCareerDirections(m, scoresObj),
-                        relationship: getRelationshipMatch(m, g, scoresObj),
-                        growth: getGrowthAdvice(m, s, g, scoresObj)
-                    };
+                        // 在 REPORT.HTML 的 onMounted 里，我们将数据结构改成这样：
+reportData.value = {
+    // ... 前面的基础变量保持不变
+    archetypeTitle: `${elements[m].char}${elements[s].char}${g === 'male' ? '男' : '女'}`,
+    sections: {
+        main: { 
+            title: `【绝对内核】潜意识底色`, 
+            subtitle: 'CORE INSTINCT', 
+            icon: 'fa-solid fa-cube', 
+            content: getDarkCore(m, g, scoresObj), // 新版暗黑解析
+            elKey: m 
+        },
+        sub: { 
+            title: `【异性眼中的你】性张力与社交面具`, 
+            subtitle: 'SEXUAL TENSION & MASK', 
+            icon: 'fa-solid fa-mask', 
+            content: getAttraction(m, s, g, scoresObj), // 聚焦男女吸引力
+            elKey: s 
+        },
+        missing: { 
+            title: `【致命伤】被剥削的盲区`, 
+            subtitle: 'FATAL VULNERABILITY', 
+            icon: 'fa-solid fa-link-slash', 
+            content: getFatalFlaw(w, g, scoresObj), // 聚焦渣男渣女吸血陷阱
+            elKey: w 
+        }
+    },
+    advantage: getHuntingAdvantage(m, s, g), // 狩猎优势（搞钱/撒娇/性张力）
+    growth: getDarkAdvice(m, s, g) // 极度现实的避坑与搞钱指南
+};
 
                     setTimeout(() => { loadingText.value = `Access Key [${code}] Verified.`; }, 600);
                     setTimeout(() => { loadingText.value = 'Rendering Tri-Phase Stage...'; }, 1200);
