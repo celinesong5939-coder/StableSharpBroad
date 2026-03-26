@@ -9,20 +9,46 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-    <style>
+   <style>
         :root { --c-gold: #d4af37; --c-purple: #4a154b; --c-rose: #c5838d; }
         * { font-family: 'Noto Serif SC', serif; user-select: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-        body { margin: 0; overflow: hidden; background-color: #05020a; color: #fff; }
+        
+        /* ⚠️ 核心修复1：加入手机端刘海屏/底部横条安全区适配 */
+        body { 
+            margin: 0; overflow: hidden; background-color: #05020a; color: #fff; 
+            padding-top: env(safe-area-inset-top); 
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* ⚠️ 核心修复2：顶部导航栏独立深色渐变层，强制盖住底部晶体，不和文字打架 */
+        header { 
+            background: linear-gradient(180deg, rgba(5,2,10,1) 60%, rgba(5,2,10,0) 100%); 
+            padding-bottom: 2rem; 
+            position: relative;
+            z-index: 50; 
+        }
 
         #starfield { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
 
+        /* 晶体默认状态 (初始选择男女页面) */
         .scene {
-            position: fixed; left: 50%; top: 35%; transform: translate(-50%, -50%) scale(1);
+            position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%) scale(1);
             width: 150px; height: 150px; perspective: 1200px; z-index: 10;
             transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
         }
-        .scene.state-quiz { top: 80px; transform: translate(-50%, 0) scale(0.4); opacity: 0.8; }
-        .scene.state-unlock { top: 25%; transform: translate(-50%, -50%) scale(0.6); opacity: 0.4; filter: blur(4px); }
+        /* ⚠️ 核心修复3：答题状态下，晶体大幅缩小、变暗，并紧贴顶部，彻底让出屏幕中心 */
+        .scene.state-quiz { top: 90px; transform: translate(-50%, 0) scale(0.25); opacity: 0.4; }
+        .scene.state-unlock { top: 25%; transform: translate(-50%, -50%) scale(0.5); opacity: 0.4; filter: blur(4px); }
+
+        /* ⚠️ 核心修复4：答题卡片区域强制下压，完美避开晶体和头部 Header */
+        .quiz-content-area {
+            padding-top: 140px; 
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
 
         .crystal { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; animation: spin-3d 15s infinite linear; }
         .face {
@@ -70,7 +96,7 @@
 <body>
     <canvas id="starfield"></canvas>
 
-    <div id="app" class="w-full h-screen flex flex-col relative z-20 overflow-y-auto">
+   <div id="app" class="w-full h-screen flex flex-col relative z-20 overflow-y-auto">
         <div class="scene" :class="'state-' + phase">
             <div class="crystal">
                 <div class="face front"></div><div class="face back"></div>
@@ -88,10 +114,10 @@
             <div v-if="phase === 'start'" class="absolute inset-0 flex flex-col justify-end items-center pb-[12vh] h-full">
                 <div class="text-center mb-8">
                     <div class="text-3xl font-black tracking-[0.5em] text-transparent bg-clip-text bg-gradient-to-b from-white to-[#d4af37] mb-2 indent-2">三相坍缩</div>
-                    <div class="text-[10px] text-[#c5838d] tracking-[0.4em] uppercase font-sans">SATABLE · SHARP · BROAD / TRI-PHASE DYNAMICS</div>
+                    <div class="text-[10px] text-[#c5838d] tracking-[0.4em] uppercase font-sans">两性情感博弈与潜意识解码</div>
                 </div>
                 <button @click="enterSystem" class="px-12 py-4 bg-[#14051e]/60 border border-[#d4af37] text-[#d4af37] text-sm tracking-[0.3em] rounded backdrop-blur shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:bg-[#d4af37] hover:text-black hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition-all">
-                    开启命运星轨
+                    开启潜意识星轨
                 </button>
             </div>
         </transition>
@@ -105,30 +131,30 @@
                     <div @click="selectGender('male')" class="gender-btn flex-1 glass-card p-10 rounded-lg cursor-pointer flex flex-col items-center group relative overflow-hidden">
                         <i class="fa-solid fa-mars text-4xl mb-4 text-[#c5838d] group-hover:text-[#d4af37] transition-colors"></i>
                         <span class="text-xl tracking-widest font-bold text-slate-200 group-hover:text-white">男</span>
-                        <span class="text-[10px] text-[#c5838d]/60 mt-2 tracking-[0.2em] uppercase">Animus</span>
+                        <span class="text-[10px] text-[#c5838d]/60 mt-2 tracking-[0.2em] uppercase">猎手 / 供养者</span>
                     </div>
                     <div @click="selectGender('female')" class="gender-btn flex-1 glass-card p-10 rounded-lg cursor-pointer flex flex-col items-center group relative overflow-hidden">
                         <i class="fa-solid fa-venus text-4xl mb-4 text-[#c5838d] group-hover:text-[#d4af37] transition-colors"></i>
                         <span class="text-xl tracking-widest font-bold text-slate-200 group-hover:text-white">女</span>
-                        <span class="text-[10px] text-[#c5838d]/60 mt-2 tracking-[0.2em] uppercase">Anima</span>
+                        <span class="text-[10px] text-[#c5838d]/60 mt-2 tracking-[0.2em] uppercase">猎手 / 资源方</span>
                     </div>
                 </div>
             </div>
         </transition>
 
         <transition name="fade">
-            <div v-if="phase === 'quiz'" class="absolute inset-0 flex flex-col items-center pt-32 pb-6 px-6 max-w-2xl mx-auto w-full h-full">
+            <div v-if="phase === 'quiz'" class="absolute inset-0 flex flex-col items-center px-6 max-w-2xl mx-auto w-full h-full quiz-content-area">
                 <div class="w-full flex justify-between items-end mb-4 px-1">
                     <div @click="prevQuestion" class="cursor-pointer text-[#c5838d] hover:text-[#d4af37] transition-colors flex items-center gap-2 text-xs tracking-[0.2em] font-bold group">
                         <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> BACK
                     </div>
                     <div class="text-[#d4af37]/70 text-xs font-bold tracking-widest">PHASE {{ currentQIndex + 1 }} / {{ questions.length }}</div>
                 </div>
-                <div class="w-full h-1 bg-[#14051e] rounded-full mb-4 relative overflow-hidden border border-white/5">
+                <div class="w-full h-1 bg-[#14051e] rounded-full mb-4 relative overflow-hidden border border-white/5 flex-shrink-0">
                     <div class="h-full bg-gradient-to-r from-[#c5838d] to-[#d4af37] transition-all duration-500" :style="{ width: progressPercent + '%' }"></div>
                 </div>
 
-                <div class="w-full flex-1 flex flex-col justify-center relative overflow-y-auto pr-2 pb-8">
+                <div class="w-full flex-1 flex flex-col justify-start relative overflow-y-auto pr-2 pb-8">
                     <transition name="slide-up" mode="out-in">
                         <div :key="currentQIndex" class="w-full">
                             <h2 class="text-[16px] md:text-xl font-medium leading-relaxed mb-8 text-slate-100 tracking-wide text-justify">
@@ -168,7 +194,6 @@
                 </div>
             </div>
         </transition>
-
     </div>
 
     <script>
@@ -195,83 +220,587 @@
 
         // ================= 【女性专用 36 题 (A=石, B=布, C=剪)】 =================
         const FEMALE_QUESTIONS = [
-            { text: "1. 在亲密关系中，你最看重的对方特质是？", options: [{ text: "忠诚可靠，让我感到安心稳定", value: "rock" }, { text: "能力强、有事业心，能提供资源或引领我成长", value: "paper" }, { text: "风趣幽默，能给我充足的情绪价值和浪漫体验", value: "scissors" }]},
-            { text: "2. 当与伴侣发生分歧时，你通常的做法是？", options: [{ text: "暂时回避，等双方冷静后再沟通", value: "rock" }, { text: "明确表达自己的立场，要求对方给出解决方案", value: "paper" }, { text: "用撒娇、调侃或转移话题的方式缓和气氛", value: "scissors" }]},
-            { text: "3. 在职场中，你更倾向于扮演哪种角色？", options: [{ text: "踏实执行者，将分内工作做到极致", value: "rock" }, { text: "团队协调者，善于维护关系和争取资源", value: "paper" }, { text: "灵活应变者，寻找快速晋升或跳槽的机会", value: "scissors" }]},
-            { text: "4. 面对一位条件优秀但忽冷忽热的追求者，你会？", options: [{ text: "感到不安，希望对方给明确态度，否则选择退出", value: "rock" }, { text: "评估对方价值，若值得则主动争取关系主导权", value: "paper" }, { text: "享受这种拉扯，用若即若离的方式应对", value: "scissors" }]},
-            { text: "5. 关于“付出”，你的态度更接近？", options: [{ text: "付出应当对等，我不喜欢单方面付出或索取", value: "rock" }, { text: "我愿意付出更多，但希望对方领情并尊重我的安排", value: "paper" }, { text: "我更擅长让别人为我付出，这让我有成就感", value: "scissors" }]},
-            { text: "6. 在朋友圈中，你通常扮演什么角色？", options: [{ text: "靠谱的倾听者，朋友会找我倾诉，但我不是中心", value: "rock" }, { text: "组织者，经常张罗聚会，大家习惯听我安排", value: "paper" }, { text: "氛围担当，能和不同的人玩到一起，活跃气氛", value: "scissors" }]},
-            { text: "7. 对于婚姻，你的看法更符合？", options: [{ text: "婚姻是人生的必经阶段，希望找合适的人踏实过日子", value: "rock" }, { text: "婚姻是资源整合，对方家庭、能力、人品都需要考量", value: "paper" }, { text: "不急于结婚，除非遇到能持续让我心动的人", value: "scissors" }]},
-            { text: "8. 当你发现伴侣与异性有较亲密的工作往来，你会？", options: [{ text: "内心不舒服但不会直接说，会用暗示表达不满", value: "rock" }, { text: "明确划清边界，要求对方调整相处方式", value: "paper" }, { text: "表面不在意，但会通过提升自身魅力来吸引对方更多关注", value: "scissors" }]},
-            { text: "9. 你更认同哪种消费观？", options: [{ text: "量入为出，注重储蓄，为未来做准备", value: "rock" }, { text: "投资型消费，愿意为提升资源、人脉、形象花钱", value: "paper" }, { text: "体验型消费，愿意为情绪价值和享受买单", value: "scissors" }]},
-            { text: "10. 如果你和一个条件不如你但对你很好的人在一起，你更可能？", options: [{ text: "珍惜对方的真心，愿意一起努力改善生活", value: "rock" }, { text: "心里有优越感，但会掌控关系，让对方听话", value: "paper" }, { text: "时间久了可能会厌倦，觉得对方配不上自己", value: "scissors" }]},
-            { text: "11. 在竞争环境中，你的表现通常是？", options: [{ text: "做好自己的事，不主动树敌，靠实力说话", value: "rock" }, { text: "拉拢盟友，借力打力，用资源和关系取胜", value: "paper" }, { text: "灵活应变，寻找捷径，必要时出其不意", value: "scissors" }]},
-            { text: "12. 你更希望伴侣如何向你表达爱？", options: [{ text: "用行动证明，比如记住我的习惯、为我解决问题", value: "rock" }, { text: "给予实际资源，比如财务支持、事业帮助", value: "paper" }, { text: "提供情绪体验，比如浪漫仪式感、赞美和关注", value: "scissors" }]},
-            { text: "13. 当你面临压力时，最可能的反应是？", options: [{ text: "默默承受，按照既定计划一步步解决", value: "rock" }, { text: "主动寻求他人帮助或调动资源来应对", value: "paper" }, { text: "暂时逃避，做点别的事情转移注意力", value: "scissors" }]},
-            { text: "14. 你认为自己在人际交往中最大的优势是？", options: [{ text: "诚实守信，值得信赖", value: "rock" }, { text: "大局观强，能协调各方利益", value: "paper" }, { text: "善于沟通，能快速建立好感", value: "scissors" }]},
-            { text: "15. 对于“规则”，你的态度是？", options: [{ text: "规则就应该遵守，这是社会运行的基础", value: "rock" }, { text: "规则可以为我所用，必要时可以调整", value: "paper" }, { text: "规则是用来突破的，按自己心意最重要", value: "scissors" }]},
-            { text: "16. 在择偶时，你对“门当户对”的看法是？", options: [{ text: "比较重要，相似背景更容易长久", value: "rock" }, { text: "非常重要，这是关系稳定的基础", value: "paper" }, { text: "不太在意，感觉对了最重要", value: "scissors" }]},
-            { text: "17. 当你被他人冒犯时，你更可能？", options: [{ text: "记在心里，但表面维持和平，以后慢慢疏远", value: "rock" }, { text: "当场指出，让对方知道你的底线", value: "paper" }, { text: "当时不发作，但会在合适的时机“还回去”", value: "scissors" }]},
-            { text: "18. 你更享受哪种类型的社交活动？", options: [{ text: "小范围、深度的朋友聚会", value: "rock" }, { text: "有明确主题的商务或行业交流", value: "paper" }, { text: "新鲜有趣的派对或新奇体验", value: "scissors" }]},
-            { text: "19. 你认为自己性格中最大的弱点是？", options: [{ text: "有时过于保守，不敢冒险", value: "rock" }, { text: "有时控制欲强，让人有压力", value: "paper" }, { text: "有时缺乏耐心，容易厌倦", value: "scissors" }]},
-            { text: "20. 在团队合作中，你最反感的是？", options: [{ text: "有人不守承诺，拖累进度", value: "rock" }, { text: "有人挑战你的权威或打乱计划", value: "paper" }, { text: "有人限制你的发挥，规矩太多", value: "scissors" }]},
-            { text: "21. 面对一个需要长期投入但回报稳定的事情，你会？", options: [{ text: "愿意坚持，相信积累的力量", value: "rock" }, { text: "会评估是否值得投入资源去主导", value: "paper" }, { text: "更倾向于找短期可见收益的机会", value: "scissors" }]},
-            { text: "22. 你更认同哪种教育孩子的方式？", options: [{ text: "树立规矩，培养责任感和自律", value: "rock" }, { text: "提供资源，帮孩子建立人脉和眼界", value: "paper" }, { text: "鼓励自由发展，保护孩子的个性和创造力", value: "scissors" }]},
-            { text: "23. 当你遇到挫折时，你更倾向于？", options: [{ text: "自我反思，下次做得更好", value: "rock" }, { text: "分析原因，调整策略重新布局", value: "paper" }, { text: "快速翻篇，寻找新的方向", value: "scissors" }]},
-            { text: "24. 你认为自己在亲密关系中最大的需求是？", options: [{ text: "稳定和安全", value: "rock" }, { text: "尊重和掌控感", value: "paper" }, { text: "激情和新鲜感", value: "scissors" }]},
-            { text: "25. 对于“朋友借钱”这类事，你的做法通常是？", options: [{ text: "看关系亲疏，借出去就做好不还的准备", value: "rock" }, { text: "会借，但会明确约定还款时间和方式", value: "paper" }, { text: "一般不会借，担心影响关系", value: "scissors" }]},
-            { text: "26. 你更希望别人如何评价你？", options: [{ text: "靠谱、踏实", value: "rock" }, { text: "有魄力、能成事", value: "paper" }, { text: "有趣、有魅力", value: "scissors" }]},
-            { text: "27. 在旅行规划中，你通常？", options: [{ text: "提前做好详细攻略，按计划进行", value: "rock" }, { text: "定好大框架，但留出灵活调整空间", value: "paper" }, { text: "说走就走，享受意外惊喜", value: "scissors" }]},
-            { text: "28. 当你喜欢的人表现出犹豫时，你会？", options: [{ text: "耐心等待，给对方时间和空间", value: "rock" }, { text: "主动推进，明确表达你的想法", value: "paper" }, { text: "制造一些“失去感”来刺激对方", value: "scissors" }]},
-            { text: "29. 你认为自己在工作中最需要提升的是？", options: [{ text: "灵活性和应变能力", value: "rock" }, { text: "耐心和细节把控", value: "paper" }, { text: "野心和魄力", value: "scissors" }]},
-            { text: "30. 对于“社交应酬”，你的态度是？", options: [{ text: "能推就推，更喜欢独处或陪家人", value: "rock" }, { text: "视之为必要投资，会主动参加", value: "paper" }, { text: "乐于参加，能认识新朋友很有趣", value: "scissors" }]},
-            { text: "31. 当伴侣忘记重要纪念日，你更可能？", options: [{ text: "虽然失望但不说，自己消化情绪", value: "rock" }, { text: "明确表达不满，要求对方补偿", value: "paper" }, { text: "半开玩笑地“惩罚”对方，趁机提个小要求", value: "scissors" }]},
-            { text: "32. 你更倾向于选择哪种类型的伴侣？", options: [{ text: "踏实顾家的类型", value: "rock" }, { text: "事业有成、有担当的类型", value: "paper" }, { text: "浪漫有趣、能带你体验生活的类型", value: "scissors" }]},
-            { text: "33. 在决策时，你更依赖？", options: [{ text: "经验和惯例", value: "rock" }, { text: "分析和逻辑", value: "paper" }, { text: "直觉和灵感", value: "scissors" }]},
-            { text: "34. 你认为自己在人际关系中最需要改进的是？", options: [{ text: "更主动表达自己的想法", value: "rock" }, { text: "学会适当放手，不要什么都管", value: "paper" }, { text: "增强责任感，不要只顾自己", value: "scissors" }]},
-            { text: "35. 对于“冒险”，你的态度是？", options: [{ text: "尽量避免，安全第一", value: "rock" }, { text: "评估风险收益后，值得才做", value: "paper" }, { text: "喜欢冒险，能带来刺激和成长", value: "scissors" }]},
-            { text: "36. 你觉得理想的生活状态是？", options: [{ text: "安稳平静，有可预期的未来", value: "rock" }, { text: "掌控全局，事业家庭都在自己规划中", value: "paper" }, { text: "自由自在，随时可以尝试新事物", value: "scissors" }]}
-        ];
+    {
+        "text": "【情境 01】你受邀参加一场顶级的名流晚宴，你的目标是吸引全场最高价值的男性。你会选择哪种战袍？",
+        "options": [
+            { "text": "极致高级剪裁的低调真丝长裙。不露锋芒，但懂行的人一眼就能看出你温婉大方、极具‘好嫁’的正室气质。", "value": "rock" },
+            { "text": "带有一点权力象征的垫肩修身礼服。你要让他明白，你不仅是个漂亮的女人，更是个能在事业上和他并肩的顶级合伙人。", "value": "paper" },
+            { "text": "极其张扬、完美勾勒腰臀曲线的闪钻露背裙。不需要废话，你要用绝对的性张力和荷尔蒙让他挪不开眼。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 02】你意外发现，那个极其有钱、包揽了你所有奢侈开销的未婚夫，在外面用小号偷偷给年轻女孩发暧昧消息。你的第一反应是？",
+        "options": [
+            { "text": "为了保住即将到手的阶层跨越装作不知道。只要他不搞出私生子动摇我的正宫地位，男人的逢场作戏可以忍。", "value": "rock" },
+            { "text": "立刻收集证据去谈判。要求他把核心房产过户到我名下作为封口费，把这次出轨变成我搞钱的跳板。", "value": "paper" },
+            { "text": "极度恶心，情绪大爆发。直接把事情闹大让他身败名裂，然后头也不回地甩了他，绝不委屈自己。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 03】一个男人长得极帅、很会提供情绪价值，每次做爱都让你灵魂战栗，但他其实是个没有正经工作、随时可能向你借钱的“吸血鬼”。你会？",
+        "options": [
+            { "text": "坚决远离。他给不了我安稳的未来，我的底线是绝不向下兼容去扶贫。", "value": "rock" },
+            { "text": "把他当成纯粹的“玩物”。只要我不动真心、不给他花大钱，享受完他的身体和情绪价值就走，绝不让他影响我的基本盘。", "value": "paper" },
+            { "text": "明知道是火坑可能也会跳下去。为了那种极致的荷尔蒙多巴胺，我愿意为他花钱，甚至试图拯救他。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 04】身价过亿的男友向你求婚，但甩出了一份极其苛刻的婚前协议，要求婚前财产与你毫无关系，且离婚你可能净身出户。你会？",
+        "options": [
+            { "text": "心里委屈但还是签了。试图用绝对的忠诚和懂事证明我是真爱他的人，赌他婚后会对我不薄。", "value": "rock" },
+            { "text": "绝对不签，直接反向谈判。要求他在婚协里加入巨额的“生育奖励”和“出轨赔偿”，否则免谈。", "value": "paper" },
+            { "text": "当场撕毁协议并大哭作闹。用极高的情绪浓度控诉他亵渎了爱情，逼他产生愧疚感从而修改条款。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 05】在你的潜意识里，女性的“生育价值（生孩子）”在婚姻博弈中究竟意味着什么？",
+        "options": [
+            { "text": "是爱情的结晶，是让一个男人彻底收心、家庭圆满落地的必经之路。", "value": "rock" },
+            { "text": "是顶级筹码。是用来巩固正室地位、参与家族资产分配、实现阶层防守的终极武器。", "value": "paper" },
+            { "text": "是对女性身材和自由的毁灭性打击。除非男方能提供天价的补偿和极致的情绪抚慰，否则能拖就拖。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 06】你和伴侣去奢侈品店，你看中了一个远超你们日常消费水平的包。你希望他怎么做？",
+        "options": [
+            { "text": "坦诚预算不够，但承诺以后努力赚钱买给你。你觉得踏实过日子比虚荣更重要。", "value": "rock" },
+            { "text": "他虽然觉得贵，但你在权衡后告诉他“这个包能帮我打入更高级的阔太社交圈，属于人脉投资”，他说服并买单。", "value": "paper" },
+            { "text": "连眼睛都不眨一下直接刷卡，并且告诉你“只要你开心，花多少钱老子都乐意”。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 07】你的闺蜜找了一个极其有钱但大她20岁的老男人，每天在朋友圈晒直升机和游艇。你的真实心态是？",
+        "options": [
+            { "text": "觉得她出卖了灵魂，无法理解。我宁愿找个同龄的普通男人，过有爱情的平凡日子。", "value": "rock" },
+            { "text": "暗中观察并评估她的ROI（投资回报率）。如果老男人真的给了她核心资产，我会虚心向她请教“向上社交”的手段。", "value": "paper" },
+            { "text": "表面点赞，内心有点嫉妒但又觉得老男人太恶心。我还是更渴望既有钱又能让我有性欲的顶级高富帅。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 08】在两性关系中，你认为自己最能拿捏男人的“致命武器”是什么？",
+        "options": [
+            { "text": "极高的宜人性与道德感。我是他见过最懂事、最不会绿他、最适合娶回家托底的女人。", "value": "rock" },
+            { "text": "智商、手腕与共同利益。我能帮他搞钱、帮他梳理人脉，离开我等于抽走他事业的一半底牌。", "value": "paper" },
+            { "text": "极致的性缩力与情绪操控。我能让他欲罢不能，哪怕我作天作地，他也像吸毒一样离不开我的身体和情绪拉扯。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 09】如果男方提出“婚后希望你辞职做全职太太，每个月给你十万零花钱”，你的反应是？",
+        "options": [
+            { "text": "欣然接受。照顾好他的大后方本来就是妻子的责任，有十万块足够我把家里打理得井井有条。", "value": "rock" },
+            { "text": "表面答应，暗中把这十万块全部拿去买理财和信托。必须建立自己的隐秘资金池，防止他未来切断经济来源。", "value": "paper" },
+            { "text": "坚决拒绝。一旦失去社交圈我就会枯萎，拿十万块把我当金丝雀圈养，我会闷到发疯甚至想出轨。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 10】当你发现伴侣在刻意向你隐瞒他的真实资产（比如偷偷买房不加你名、工资少报）时，你会？",
+        "options": [
+            { "text": "感到受伤，但觉得只要他还在为这个家正常开销，我也没必要逼得太紧，伤了和气。", "value": "rock" },
+            { "text": "不动声色地查清他的底细，然后找个致命的时机（如他需要我帮大忙时）逼他交出财权，一击必杀。", "value": "paper" },
+            { "text": "立刻大闹一场，质问他是不是防着我。让他陷入不信任我的道德羞耻中，逼他用更贵的礼物来哄我。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 11】你在酒吧被一个气场极强的富二代搭讪，但他明确表示自己是不婚主义者，只玩短择。你会？",
+        "options": [
+            { "text": "礼貌拒绝并立刻离开。不以结婚为目的的撩拨都是耍流氓，绝不浪费自己的青春被白嫖。", "value": "rock" },
+            { "text": "接下这局。通过短择期接触他背后的顶级圈层和人脉，就算最后不结婚，我也要捞足隐形资源。", "value": "paper" },
+            { "text": "觉得极具挑战性。我有自信能用极致的魅力和套路让他对我上头，最终打破他的“不婚”底线。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 12】婆媳矛盾爆发，婆婆当着他的面极其难听地贬低你的出身。你期望伴侣怎么做？",
+        "options": [
+            { "text": "私下安抚我，但在他妈面前和稀泥。我为了家庭和谐可以忍让，只要他心里有我就行。", "value": "rock" },
+            { "text": "他必须当场震慑他妈。因为这不只是婆媳问题，这是在挑战我作为女主人在这个利益共同体中的绝对权威。", "value": "paper" },
+            { "text": "希望他立刻拉着我摔门就走。我要看到他为了我不顾一切对抗全世界的霸气，这样才能平息我的怒火。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 13】伴侣的事业遭受毁灭性打击，不仅破产还背上了巨额债务，可能十年内都翻不了身。你会？",
+        "options": [
+            { "text": "砸锅卖铁陪他一起还债。夫妻本是同林鸟，既然认定了这个人，再苦再难也要熬过去。", "value": "rock" },
+            { "text": "极其理智地进行资产隔离，迅速办理离婚手续。可以念旧情暗中给他生活费，但绝不能让我的阶层跟着陪葬。", "value": "paper" },
+            { "text": "陷入极度的情绪崩溃。无法忍受突然降级的生活，会在不断的抱怨和内耗中，迅速移情别恋找到新的靠山。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 14】你发现所谓的“好嫁风”在相亲市场中极其吃香，你对“好嫁风”的真实理解是？",
+        "options": [
+            { "text": "就是温柔、贤惠、本分。这是中国传统美德，女人本来就应该这样才能得到好归宿。", "value": "rock" },
+            { "text": "是一层极其完美的“捕猎伪装”。用来向高位男性释放“我极其安全、不会绿你”的信号，从而降低其防备心，换取大额资源。", "value": "paper" },
+            { "text": "是对女性天性的阉割。让我装绿茶、装乖巧去讨好老男人，我一天都演不下去，太恶心了。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 15】如果可以毫无副作用地给伴侣植入一种“潜意识指令”，你会选择？",
+        "options": [
+            { "text": "“你此生绝不会对除了我之外的任何女人产生性欲。”（绝对防御出轨）", "value": "rock" },
+            { "text": "“你赚的每一分钱，如果不全部交给我打理，你就会感到极度痛苦。”（绝对掌控资源）", "value": "paper" },
+            { "text": "“你会永远像热恋期第一天那样，对我狂热着迷、疯狂付出情绪价值。”（绝对多巴胺垄断）", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 16】他带你去参加他兄弟的局，你发现他的兄弟们带的全是年轻漂亮、穿着暴露的外围女。你会？",
+        "options": [
+            { "text": "觉得这局太脏，默默坐在他旁边宣示正宫主权，回去后严肃要求他少跟这些人来往。", "value": "rock" },
+            { "text": "游刃有余地和那些大佬兄弟谈笑风生。外围女只是玩物，我要在这个局里展现我大嫂的格局和社交手腕。", "value": "paper" },
+            { "text": "被激起了胜负欲。立刻调整状态，用更高段位的撩拨和魅力艳压全场，让他觉得带我出来极其长脸。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 17】你们准备买婚房，但首付全是他父母出的，对方明确表示房产证上只写他一个人的名字。你会？",
+        "options": [
+            { "text": "虽然失落但接受。毕竟我没出钱，只要婚后他对我好，有没有名字不影响过日子。", "value": "rock" },
+            { "text": "坚决不同意。暗示如果没有我的名字，不仅没有安全感，更意味着这不是‘我们’的共同资产，随时准备掀桌子退婚。", "value": "paper" },
+            { "text": "表面委屈答应，但婚后疯狂用他的工资买金条、买奢侈品变现，用疯狂消费来弥补自己没加名的安全感缺失。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 18】你和一个条件极其普通的男人结了婚，婚后三年平淡如水。突然，你新来的年轻上司（高富帅且单身）对你展开了猛烈且隐秘的追求。你会？",
+        "options": [
+            { "text": "惊恐且有罪恶感，立刻刻意避开上司。婚姻的底线不可触碰，平淡才是真。", "value": "rock" },
+            { "text": "冷静评估上司的真实意图。如果上司真的愿意给出巨额筹码（如离婚补偿、升职加薪），我会毫不犹豫地踢掉无能的老公完成向上跨越。", "value": "paper" },
+            { "text": "彻底沦陷在这种禁忌的刺激感中。疯狂享受上司带来的多巴胺，大概率会偷偷出轨，哪怕最后玩火自焚。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 19】如果伴侣在争吵时对你使用了“冷暴力（好几天不回消息）”，你通常如何反击？",
+        "options": [
+            { "text": "内心极度煎熬，最后往往受不了折磨，主动发大段大段的卑微小作文去求和。", "value": "rock" },
+            { "text": "比他更冷，同时切断他对我的某些资源使用权。让他明白冷战的成本是他承担不起的，逼他先低头。", "value": "paper" },
+            { "text": "直接化身“疯批美人”。跑去他公司闹、疯狂连环夺命call，或者立刻去酒吧发朋友圈和别的男人喝酒，逼他破防。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 20】你觉得女人在两性关系中，最不可饶恕的“愚蠢”是什么？",
+        "options": [
+            { "text": "背叛了一个愿意把自己全部身家都交给她、踏实本分的绝世好男人。", "value": "rock" },
+            { "text": "明明手握一把好牌（年轻美貌），却倒贴给穷鬼，错失了利用红利期完成阶层跃迁的唯一机会。", "value": "paper" },
+            { "text": "在一段毫无激情、像死水一样的婚姻里熬成了黄脸婆，一辈子没体验过被男人疯狂迷恋的滋味。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 21】男方在追求你时，每天早晚安、嘘寒问暖，但从来没有送过超过 500 块钱的礼物。你的内心弹幕是？",
+        "options": [
+            { "text": "“虽然穷点，但这么细心体贴，说明他是个愿意提供情绪价值的暖男。”", "value": "rock" },
+            { "text": "“想用廉价的早晚安白嫖我的青春？没有真金白银的诚意，立刻让他滚出我的鱼塘。”", "value": "paper" },
+            { "text": "“太无聊了，连个像样的浪漫都制造不出来，这种抠搜男跟他谈恋爱绝对像喝白开水一样没劲。”", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 22】关于“彩礼”这个极具争议的话题，你潜意识里认为它的本质作用是什么？",
+        "options": [
+            { "text": "是男方家庭对我父母养育之恩的感谢，也是新家庭启动的备用金，走个传统形式就行。", "value": "rock" },
+            { "text": "是对女方生育风险的金融对冲，也是试探男方家底和服从性的终极测试。一分都不能少，这是我的身价背书。", "value": "paper" },
+            { "text": "是对我愿意放弃整片森林、只属于他一个人的情绪补偿费。彩礼给得越高，说明他越疯狂地爱我。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 23】如果你们的关系濒临破裂，你决定甩了他，你会选择哪种最“狠”的分手方式？",
+        "options": [
+            { "text": "不想做恶人，默默收拾行李离开，留下一封好聚好散的信，只带走属于自己的东西。", "value": "rock" },
+            { "text": "提前半年开始转移共有资产，收集他的黑料作为谈判筹码，确保分手时拿走最大份额的利益，让他人财两空。", "value": "paper" },
+            { "text": "毫无预兆地突然消失，或者在发一条极具侮辱性的短信后全网拉黑，让他陷入无尽的自我怀疑和痛苦中。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 24】你发现伴侣其实是个“妈宝男”，所有大额开销都要经过他妈同意。你会？",
+        "options": [
+            { "text": "努力讨好婆婆，试图融入这个家庭，用极度的贤惠证明自己不是来骗钱的。", "value": "rock" },
+            { "text": "不动声色地挑拨他和家里的关系，一步步给他洗脑，最终实现从他妈手里夺取财权和男人的绝对控制权。", "value": "paper" },
+            { "text": "立刻大作特作，指着他的鼻子骂他是个没断奶的废物。如果他不立刻把钱交给我，我马上分手。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 25】你认为男人在出轨后，愿意主动回归家庭（求原谅）的根本原因是什么？",
+        "options": [
+            { "text": "良心发现，想起了我为这个家付出的多年辛酸，对妻子有深深的愧疚感。", "value": "rock" },
+            { "text": "计算了离婚成本太高（比如要分走一半家产或影响事业名誉），回归只是为了保住基本盘的止损行为。", "value": "paper" },
+            { "text": "外面的小三没有我骚、没有我会玩，或者小三逼宫太紧让他感到了压力，他只是回来避难的。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 26】你和伴侣一起创业，公司做大后，他试图把你边缘化，让你回归家庭。你会？",
+        "options": [
+            { "text": "顺水推舟退居二线。只要他把工资卡上交，能陪孩子，谁当老板无所谓，我乐得清闲。", "value": "rock" },
+            { "text": "绝对反击。立刻笼络公司核心高管，掌握财务命脉，明确警告他：这江山有我一半，敢踢我出局我就毁了公司。", "value": "paper" },
+            { "text": "在公司闹得天翻地覆，到处散播他“过河拆桥”的渣男行径，用舆论和道德压力逼他妥协。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 27】面对一个大你15岁、离异带娃但身价数十亿的大佬疯狂追求，你的内心独白是？",
+        "options": [
+            { "text": "“太复杂了，给别人当后妈绝对是个吃力不讨好的坑，我只想找个清白人家安稳度日。”", "value": "rock" },
+            { "text": "“后妈不好当，但我可以生自己的孩子去争家产。这是普通女孩少奋斗一百年的终极捷径，必须拿下。”", "value": "paper" },
+            { "text": "“又老又有爹味，就算给我买几百万的包，我也亲不下去。这种老男人哪有八块腹肌的小奶狗香？”", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 28】你们因为意见不合大吵一架，他气得摔门而出。此时你的操作是？",
+        "options": [
+            { "text": "反思自己是不是话说太重了，默默把家里收拾好，等他回来给他做顿热饭递台阶。", "value": "rock" },
+            { "text": "立刻锁门。把他的副卡停掉，计算如果真的撕破脸我的后路在哪里，绝不主动联系他，比谁沉得住气。", "value": "paper" },
+            { "text": "穿上最性感的裙子去夜店发自拍，配文“单身真好”。用极限的情绪刺激逼他发疯跑回来找我。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 29】如果闺蜜向你炫耀她的老公不仅工资全交，每天还跪着给她洗脚。你会觉得？",
+        "options": [
+            { "text": "真是个好命的女人，找了个绝世好男人，有点羡慕她稳稳的幸福。", "value": "rock" },
+            { "text": "这男人肯定没太大出息。真正的顶级掠食者绝对不会在女人面前展现这种低价值的服从，她老公顶多是个‘供养者’。", "value": "paper" },
+            { "text": "她驭夫有术，一定是用了什么极其高明的洗脑和情绪调教手段，赶紧向她取经怎么把男人训成狗。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 30】对于“绿茶婊”这个群体，你潜意识里的真实看法是？",
+        "options": [
+            { "text": "极度厌恶且鄙视。觉得她们破坏别人感情，是不守妇道、道德败坏的坏女人。", "value": "rock" },
+            { "text": "觉得她们是一群极其清醒的利己主义者。虽然手段不光彩，但她们懂得利用性别红利去榨取最大资源，值得防范但不必鄙视。", "value": "paper" },
+            { "text": "有时会暗自佩服她们撩汉的段位，甚至想学两招她们装柔弱、提供情绪多巴胺的技巧来拿捏自己的男人。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 31】伴侣因为工作应酬，经常需要在外面和各种异性出入风月场所。你会如何应对这种“PU（不确定性）危机”？",
+        "options": [
+            { "text": "每天晚上查岗，要求他报备行程。虽然自己经常焦虑失眠，但只能选择相信他的为人。", "value": "rock" },
+            { "text": "在外面随便他怎么玩，只要按时把大额家用打到我账上，且绝不带病回家、不搞出私生子，我连问都懒得问。", "value": "paper" },
+            { "text": "他出去玩我也出去玩。只要他敢在外面浪，我一定比他玩得更花，用互相伤害来维持一种诡异的动态平衡。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 32】你认为自己在两性关系中最容易遭遇的“滑铁卢（被骗被坑）”是什么？",
+        "options": [
+            { "text": "太容易心软和付出。只要男人一开始对我好，我就死心塌地，最后往往被骗得人财两空还要倒贴。", "value": "rock" },
+            { "text": "太过于算计利益，显得过于精明强势，导致男方对我始终有防备心，无法建立真正托底的信任关系。", "value": "paper" },
+            { "text": "极度恋爱脑。一旦对方给我提供了顶级的情绪价值，我就完全丧失理智，明知道是渣男也舍不得放手。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 33】男方提出“AA制”婚姻，认为双方都应该保持经济独立，互不干涉。你会？",
+        "options": [
+            { "text": "只要他愿意承担大部分家庭开销，小钱AA也能接受，毕竟现在讲究男女平等。", "value": "rock" },
+            { "text": "极度可笑。男人的钱在哪心就在哪，连钱都不愿意给我管，还想白嫖我的子宫和家庭劳动？直接拉黑。", "value": "paper" },
+            { "text": "觉得他太算计、太下头。哪怕是演，连给我花钱的态度都没有，这段感情绝对提供不了一点浪漫，立刻走人。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 34】你发现伴侣手机里有一个名叫“文件传输助手”的微信，其实是个隐形的备胎小号。你会？",
+        "options": [
+            { "text": "感到天塌了。哭着找他当面对峙，要求他立刻删除并保证不再犯，只要他认错我就再给他一次机会。", "value": "rock" },
+            { "text": "假装没看见，偷偷用他的手机截图所有聊天记录、转账记录发送给自己备用，作为未来离婚分财产的绝对把柄。", "value": "paper" },
+            { "text": "直接在那个备胎微信里群发他短小快的裸照或者恶心视频，彻底搞臭他的名声，然后把他踢出家门。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 35】当你年老色衰，失去年轻时的“性张力红利”时，你最希望自己手里握着什么？",
+        "options": [
+            { "text": "一个从一而终、不会嫌弃我老去的忠诚伴侣，以及几个孝顺懂事的孩子。", "value": "rock" },
+            { "text": "绝对的财权、几套核心地段的房产，以及在家族中不可动摇的太后地位。", "value": "paper" },
+            { "text": "依然能随时拿钱砸出年轻小鲜肉来提供情绪价值的资本，绝对不能忍受无聊的晚年。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 36】如果用一种动物来形容你在两性黑森林里的生存策略，你觉得是？",
+        "options": [
+            { "text": "海龟。拥有最厚的防御铠甲（底线与传统），不主动攻击，靠着极强的忍耐力和稳定性熬死所有竞争者。", "value": "rock" },
+            { "text": "黑寡妇蜘蛛。在交配（获取资源）后，如果有必要，可以极其冷血地吞噬掉伴侣的残余价值来壮大自己。", "value": "paper" },
+            { "text": "狐狸。没有绝对的力量，但靠着极致的魅惑、狡黠和情绪操控，游走在各种强者之间攫取养分。", "value": "scissors" }
+        ]
+    }
+];
 
         // ================= 【男性专用 36 题 (A=石, B=布, C=剪)】 =================
-        const MALE_QUESTIONS = [
-            { text: "1. 在亲密关系中，你最看重的对方特质是？", options: [{ text: "忠诚顾家，让我感到踏实", value: "rock" }, { text: "能力强、有资源，能共同提升阶层", value: "paper" }, { text: "有趣活泼，能带来新鲜感和情绪价值", value: "scissors" }]},
-            { text: "2. 当与伴侣发生分歧时，你通常的做法是？", options: [{ text: "暂时沉默，等冷静后再沟通", value: "rock" }, { text: "直接讲道理，要求对方给方案", value: "paper" }, { text: "用幽默或转移话题的方式化解", value: "scissors" }]},
-            { text: "3. 在职场中，你更倾向于扮演哪种角色？", options: [{ text: "业务骨干，专注做好本职工作", value: "rock" }, { text: "管理者，善于调动资源和协调关系", value: "paper" }, { text: "创业者或自由职业者，灵活求变", value: "scissors" }]},
-            { text: "4. 面对一位条件优秀但忽冷忽热的异性，你会？", options: [{ text: "感到困惑，希望对方明确态度，否则放弃", value: "rock" }, { text: "评估对方价值，主动出击争取主导权", value: "paper" }, { text: "享受追逐过程，用若即若离保持神秘", value: "scissors" }]},
-            { text: "5. 关于“付出”，你的态度更接近？", options: [{ text: "付出应当平衡，不愿单方面吃亏", value: "rock" }, { text: "愿意为家庭/事业付出，但希望对方服从大局", value: "paper" }, { text: "更擅长让对方为我付出，我享受主导节奏", value: "scissors" }]},
-            { text: "6. 在朋友圈中，你通常扮演什么角色？", options: [{ text: "可靠的朋友，有事会帮忙，但不算中心", value: "rock" }, { text: "核心人物，大家习惯听我建议", value: "paper" }, { text: "活跃分子，擅长组织和活跃气氛", value: "scissors" }]},
-            { text: "7. 对于婚姻，你的看法更符合？", options: [{ text: "婚姻是成家立业的基础，要负责任", value: "rock" }, { text: "婚姻是强强联合，资源互补很重要", value: "paper" }, { text: "不着急结婚，除非遇到真正心动的人", value: "scissors" }]},
-            { text: "8. 当你发现伴侣与异性有较亲密的工作往来，你会？", options: [{ text: "心里介意但不说，用冷淡暗示", value: "rock" }, { text: "明确沟通，划清界限", value: "paper" }, { text: "表面大度，但会通过提升吸引力来巩固关系", value: "scissors" }]},
-            { text: "9. 你更认同哪种消费观？", options: [{ text: "节俭储蓄，为未来打算", value: "rock" }, { text: "投资型消费，用于拓展资源或提升形象", value: "paper" }, { text: "体验型消费，追求生活品质和乐趣", value: "scissors" }]},
-            { text: "10. 如果你和一个条件不如你但对你很好的人在一起，你更可能？", options: [{ text: "珍惜对方，一起努力", value: "rock" }, { text: "有优越感，但会承担照顾责任", value: "paper" }, { text: "时间久了觉得乏味，可能心猿意马", value: "scissors" }]},
-            { text: "11. 在竞争环境中，你的表现通常是？", options: [{ text: "专注提升自己，靠实力竞争", value: "rock" }, { text: "建立联盟，借力打力", value: "paper" }, { text: "灵活机动，寻找捷径", value: "scissors" }]},
-            { text: "12. 你更希望伴侣如何向你表达爱？", options: [{ text: "用行动关心，比如照顾生活、默默支持", value: "rock" }, { text: "在事业或资源上给予助力", value: "paper" }, { text: "提供情绪价值，比如崇拜、赞美和浪漫", value: "scissors" }]},
-            { text: "13. 当你面临压力时，最可能的反应是？", options: [{ text: "默默扛着，按部就班解决", value: "rock" }, { text: "主动找人商量，调动资源应对", value: "paper" }, { text: "暂时放松，换个环境调整", value: "scissors" }]},
-            { text: "14. 你认为自己在人际交往中最大的优势是？", options: [{ text: "诚实可靠", value: "rock" }, { text: "有领导力，能整合资源", value: "paper" }, { text: "幽默风趣，容易拉近距离", value: "scissors" }]},
-            { text: "15. 对于“规则”，你的态度是？", options: [{ text: "规则必须遵守", value: "rock" }, { text: "规则可以为我所用", value: "paper" }, { text: "规则是用来打破的", value: "scissors" }]},
-            { text: "16. 在择偶时，你对“门当户对”的看法是？", options: [{ text: "比较重要，背景相似矛盾少", value: "rock" }, { text: "很重要，这是长期稳定的基础", value: "paper" }, { text: "不太在意，感觉最重要", value: "scissors" }]},
-            { text: "17. 当你被他人冒犯时，你更可能？", options: [{ text: "忍让，但以后保持距离", value: "rock" }, { text: "当场反击，表明态度", value: "paper" }, { text: "记在心里，找机会“回敬”", value: "scissors" }]},
-            { text: "18. 你更享受哪种类型的社交活动？", options: [{ text: "三五好友深度聊天", value: "rock" }, { text: "商务或行业交流会", value: "paper" }, { text: "新奇有趣的派对或户外活动", value: "scissors" }]},
-            { text: "19. 你认为自己性格中最大的弱点是？", options: [{ text: "有时过于保守，不敢冒险", value: "rock" }, { text: "有时控制欲强，让人有压力", value: "paper" }, { text: "有时缺乏耐心，容易厌倦", value: "scissors" }]},
-            { text: "20. 在团队合作中，你最反感的是？", options: [{ text: "有人不守承诺，拖累进度", value: "rock" }, { text: "有人挑战你的权威或打乱计划", value: "paper" }, { text: "有人限制你的发挥，规矩太多", value: "scissors" }]},
-            { text: "21. 面对一个需要长期投入但回报稳定的事情，你会？", options: [{ text: "愿意坚持，相信积累", value: "rock" }, { text: "会评估是否值得投入资源去主导", value: "paper" }, { text: "更倾向于找短期可见收益的机会", value: "scissors" }]},
-            { text: "22. 你更认同哪种教育孩子的方式？", options: [{ text: "树立规矩，培养责任感和自律", value: "rock" }, { text: "提供资源，帮孩子建立人脉和眼界", value: "paper" }, { text: "鼓励自由发展，保护孩子的个性和创造力", value: "scissors" }]},
-            { text: "23. 当你遇到挫折时，你更倾向于？", options: [{ text: "自我反思，下次改进", value: "rock" }, { text: "分析原因，调整策略重新布局", value: "paper" }, { text: "快速翻篇，寻找新方向", value: "scissors" }]},
-            { text: "24. 你认为自己在亲密关系中最大的需求是？", options: [{ text: "稳定和安全", value: "rock" }, { text: "尊重和掌控感", value: "paper" }, { text: "激情和新鲜感", value: "scissors" }]},
-            { text: "25. 对于“朋友借钱”这类事，你的做法通常是？", options: [{ text: "看关系，借了就不指望还", value: "rock" }, { text: "会借，但明确约定", value: "paper" }, { text: "一般不借，避免麻烦", value: "scissors" }]},
-            { text: "26. 你更希望别人如何评价你？", options: [{ text: "靠谱、实在", value: "rock" }, { text: "有魄力、能成事", value: "paper" }, { text: "有趣、有魅力", value: "scissors" }]},
-            { text: "27. 在旅行规划中，你通常？", options: [{ text: "提前做好详细攻略", value: "rock" }, { text: "定好大框架，留出灵活空间", value: "paper" }, { text: "说走就走，享受意外", value: "scissors" }]},
-            { text: "28. 当你喜欢的人表现出犹豫时，你会？", options: [{ text: "耐心等待，给对方时间", value: "rock" }, { text: "主动推进，明确表达", value: "paper" }, { text: "制造一些“失去感”来刺激对方", value: "scissors" }]},
-            { text: "29. 你认为自己在工作中最需要提升的是？", options: [{ text: "灵活性和应变能力", value: "rock" }, { text: "耐心和细节把控", value: "paper" }, { text: "野心和魄力", value: "scissors" }]},
-            { text: "30. 对于“社交应酬”，你的态度是？", options: [{ text: "能推就推，更喜欢独处或陪家人", value: "rock" }, { text: "视之为必要投资，会主动参加", value: "paper" }, { text: "乐于参加，能认识新朋友很有趣", value: "scissors" }]},
-            { text: "31. 当伴侣忘记重要纪念日，你更可能？", options: [{ text: "失望但不说，自己消化", value: "rock" }, { text: "直接表达不满，要求补偿", value: "paper" }, { text: "半开玩笑地“惩罚”，趁机提要求", value: "scissors" }]},
-            { text: "32. 你更倾向于选择哪种类型的伴侣？", options: [{ text: "贤惠顾家的类型", value: "rock" }, { text: "有事业心、能共同奋斗的类型", value: "paper" }, { text: "有趣、有活力的类型", value: "scissors" }]},
-            { text: "33. 在决策时，你更依赖？", options: [{ text: "经验和惯例", value: "rock" }, { text: "分析和逻辑", value: "paper" }, { text: "直觉和灵感", value: "scissors" }]},
-            { text: "34. 你认为自己在人际关系中最需要改进的是？", options: [{ text: "更主动表达自己的想法", value: "rock" }, { text: "学会适当放手，不要什么都管", value: "paper" }, { text: "增强责任感，不要只顾自己", value: "scissors" }]},
-            { text: "35. 对于“冒险”，你的态度是？", options: [{ text: "尽量避免，安全第一", value: "rock" }, { text: "评估风险收益后，值得才做", value: "paper" }, { text: "喜欢冒险，能带来刺激和成长", value: "scissors" }]},
-            { text: "36. 你觉得理想的生活状态是？", options: [{ text: "安稳平静，有可预期的未来", value: "rock" }, { text: "掌控全局，事业家庭都在自己规划中", value: "paper" }, { text: "自由自在，随时可以尝试新事物", value: "scissors" }]}
-        ];
+       const MALE_QUESTIONS = [
+    {
+        "text": "【情境 01】在顶级商会局上，你想挑选一个长择（结婚）对象。全场有三个极其亮眼的女人，你会选谁？",
+        "options": [
+            { "text": "穿着素雅保守，眼神干净，一看就是圈子里名声极好、没有烂桃花的“高PU确定性”良家女。", "value": "rock" },
+            { "text": "家世显赫的财阀千金，气场极强。哪怕她脾气大点，但娶了她就能瞬间让我的事业少奋斗三十年。", "value": "paper" },
+            { "text": "全场最妖艳、身材最火辣、眼神拉丝的尤物。激起了我极强的雄性征服欲，哪怕知道她是个海王也要拿下。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 02】如果你一个月薪三万，你的漂亮女友天天刷小红书，要求你借网贷给她买十万的爱马仕，否则就是不爱她。你会？",
+        "options": [
+            { "text": "感到极大的压力和自卑，但为了留住她，可能会咬牙分期给她买，试图用“供养”来买断她的忠诚。", "value": "rock" },
+            { "text": "立刻警觉这个女人的“吸血”属性。严厉拒绝并确立规矩，如果她继续闹，直接把她降级为短择炮友或直接换人。", "value": "paper" },
+            { "text": "用极其高明的情绪PUA反杀她：“你这么物质，根本配不上我纯洁的爱。”用花言巧语把她绕晕，一分钱不花还能睡她。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 03】你发现妻子在精神上极其崇拜她的高富帅男上司，每天偷偷看对方的朋友圈，但并未发生肉体关系。你的最痛点是？",
+        "options": [
+            { "text": "家庭的稳定感被打破，极度害怕她随时会提出离婚，导致我的大后方崩塌。", "value": "rock" },
+            { "text": "我的阶层和雄性尊严被严重侮辱。我竟然在资源和能力上输给了另一个男人，让我产生了被“向下兼容”的耻辱感。", "value": "paper" },
+            { "text": "嫉妒发狂。她竟然把本该属于我的崇拜和多巴胺给了别人，激起了我极强的破坏欲和报复欲。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 04】你们准备结婚，女方父母狮子大开口要 100 万彩礼，且明确表示不带回小家庭，留给女方弟弟买房。你的操作是？",
+        "options": [
+            { "text": "虽然极其憋屈，但如果真的很爱她且付得起，就当是花钱买个安稳老婆，咬牙给了。", "value": "rock" },
+            { "text": "坚决不当“扶弟魔”的血包。立刻动用谈判手腕，暗示如果逼太紧不仅一分不给还会搞臭女方名声，逼女方和家里决裂来投靠我。", "value": "paper" },
+            { "text": "表面假装答应拖延时间，私下立刻启动备胎库。在把她睡够、玩腻之后，找个极度侮辱人的借口直接把她甩了。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 05】对于男人的“终极性幻想”，你潜意识里觉得最有成就感的是什么？",
+        "options": [
+            { "text": "拥有一个无论我在外面多么落魄，回到家依然愿意为我留一盏灯、毫无怨言给我做饭的贞洁妻子。", "value": "rock" },
+            { "text": "拥有古代帝王般的“三宫六院”分配权。不仅要睡最顶级的女人，还要让她们心甘情愿臣服于我的权力和财富，不敢有二心。", "value": "paper" },
+            { "text": "万花丛中过，片叶不沾身。靠极高的性张力让无数女人为我疯狂、为我花钱、为我流泪，而我永远是自由的浪子。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 06】你创业失败，身负百万巨债。你的妻子提出要出去做KTV陪酒或者傍大款来帮你还债。你会？",
+        "options": [
+            { "text": "宁可自己去工地搬砖到吐血也绝不同意。男人的底线就是不能让自己的女人出去卖，这是绝对的奇耻大辱。", "value": "rock" },
+            { "text": "内心虽然屈辱，但在极端利益面前可能会默许。利用她赚来的第一桶金迅速翻盘，等我东山再起后，大概率会因为嫌她脏而换个新老婆。", "value": "paper" },
+            { "text": "毫无心理负担甚至觉得理所当然。觉得女人这个时候不就是用来牺牲的吗？甚至会用情绪操控让她心甘情愿去卖命。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 07】你身边有个条件很好、非常崇拜你的“好嫁风”女孩，但你对她完全没有性冲动。你会怎么处理她？",
+        "options": [
+            { "text": "明确拒绝，不耽误人家。没有感觉的婚姻是对双方的不负责，我不愿意将就。", "value": "rock" },
+            { "text": "把她娶回家当生育机器和全职保姆。大后方稳如泰山，我就可以毫无后顾之忧地去外面搞钱（甚至找更刺激的猎物）。", "value": "paper" },
+            { "text": "不拒绝不负责，把她养在鱼塘里吸血。偶尔给她一点廉价的甜头，心安理得地享受她提供的免费照顾和物质倒贴。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 08】当你在外面辛辛苦苦应酬搞钱，老婆却在家里天天抱怨你丧偶式育儿、不陪伴她。你的真实心态是？",
+        "options": [
+            { "text": "感到深深的自责，觉得确实亏欠了家庭，会尽量抽出时间带她出去旅游补偿。", "value": "rock" },
+            { "text": "极度反感她的“不识大体”。老子在外面打江山是为了谁？如果她连这点大局观都没有，这就是个随时会拖我后腿的废子。", "value": "paper" },
+            { "text": "直接用暴躁的脾气或冷暴力打压她，让她不敢再提。或者干脆借着应酬的名义彻底不回家，去外面找懂事的年轻女孩。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 09】你发现前女友（曾经甩了你）现在嫁给了一个不如你的穷矮矬，过得极其落魄。你的心理活动是？",
+        "options": [
+            { "text": "心里有一丝惋惜，毕竟曾经爱过，但既然过去了，希望她能过得好吧，互不打扰。", "value": "rock" },
+            { "text": "极度舒适。这就是她当年目光短浅、没看出身具潜力的我的报应。我会刻意在她面前展现我的成功，完成权力的降维打击。", "value": "paper" },
+            { "text": "觉得是个绝佳的报复机会。会假装同情去撩拨她，把她骗上床绿了那个穷矮矬，玩够了再狠狠抛弃她以雪前耻。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 10】在男性社交圈里，如果有一个兄弟带了一个极度妖艳、骚气冲天的外围女来参加聚会。你会？",
+        "options": [
+            { "text": "觉得有点尴尬和不适，自己默默喝茶，尽量不和这种复杂圈子的女人搭话，怕惹麻烦。", "value": "rock" },
+            { "text": "洞察这个兄弟的真实实力。如果他只能靠外围女来充门面，说明他阶层不够；如果他是把外围女当资源送人，我会评估是否有交易价值。", "value": "paper" },
+            { "text": "立刻用极其隐秘且高段位的眼神去撩那个女人，享受那种在兄弟眼皮底下挖墙脚、释放雄性荷尔蒙的禁忌快感。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 11】你认为男人在两性市场中，最悲哀的“死法”是什么？",
+        "options": [
+            { "text": "当了半辈子接盘侠，辛辛苦苦赚的钱全给了老婆，最后发现连孩子都不是自己的（遭遇极度背叛）。", "value": "rock" },
+            { "text": "被一个心机深重的捞女或者前妻掏空了所有核心资产，导致自己辛苦打拼半生的阶层直接跌入谷底。", "value": "paper" },
+            { "text": "因为太老实、太木讷，一辈子没体验过被顶级美女疯狂倒贴的滋味，像个工具人一样枯燥地死去。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 12】同居后，女方要求你上交工资卡，理由是“只有管钱我才有安全感”。你会如何破局？",
+        "options": [
+            { "text": "全部上交。只要她能把钱攒下来，不乱花，男人把钱给老婆管也是一种责任感的体现。", "value": "rock" },
+            { "text": "绝对不可能。财权就是男人的命脉。我会设定一个家庭公共账户，但核心资本绝不离手，如果不听话直接换人。", "value": "paper" },
+            { "text": "表面上交一张只有几千块钱余额的卡哄她开心，私底下自己早有一套隐秘的资金池用来潇洒和撩妹。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 13】如果必须在以下两种“戴绿帽”的情况中选一个相对能忍受的，你会选？",
+        "options": [
+            { "text": "绝对无法忍受任何一种。一旦发现，哪怕玉石俱焚也绝对不会放过她和那个奸夫。", "value": "rock" },
+            { "text": "她为了换取一个能让我事业一飞冲天的顶级合同，主动去睡了某个手握重权的大佬。（为了利益的战略性献祭）", "value": "paper" },
+            { "text": "她在酒吧喝醉了被一个小鲜肉骗上了床，但她依然对我死心塌地、每天给我跪舔提供情绪价值。（纯肉体失误）", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 14】你找了一个完全依靠你养活的漂亮全职太太，你潜意识里希望她对你展现出什么态度？",
+        "options": [
+            { "text": "踏实本分，把我爸妈照顾好，把家里打扫得一尘不染，绝不在外面给我惹花边新闻。", "value": "rock" },
+            { "text": "绝对的臣服与敬畏。她必须深刻明白她拥有的一切都是我施舍的，我拥有随时剥夺她生存资源的生杀大权。", "value": "paper" },
+            { "text": "每天变着花样在床上讨好我，给我提供极高浓度的崇拜感和情绪价值，像一只离不开我的宠物金丝雀。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 15】当你因为事业有成，身边开始出现各种年轻漂亮的“捞女”往上扑时，你的策略是？",
+        "options": [
+            { "text": "极力避开。我非常清楚她们图的是我的钱，为了保住现有的家庭和名誉，绝不沾惹这些烂桃花。", "value": "rock" },
+            { "text": "建立“隔离防火墙”后享受猎物。只用极少的零花钱去白嫖她们的青春，绝不让她们碰到核心资产，随时可以像扔垃圾一样扔掉。", "value": "paper" },
+            { "text": "极其享受这种帝王般的选妃快感。频繁更换年轻女孩，用金钱换取多巴胺，甚至享受她们为了争夺我而互相雌竞的戏码。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 16】你发现岳父岳母极其势利，因为你目前赚钱不够多，经常在家庭聚会上用语言暗暗羞辱你。你会？",
+        "options": [
+            { "text": "忍气吞声。暗暗发誓一定要出人头地证明自己，为了妻子不夹在中间为难，我选择暂时低头。", "value": "rock" },
+            { "text": "当场掀桌子。老子的尊严不容任何人践踏。立刻停止对女方家庭的任何隐性支持，逼妻子在我和她父母之间二选一。", "value": "paper" },
+            { "text": "表面假装顺从，私下却极其恶劣地对妻子进行冷暴力，把在岳父母那里受的气加倍撒在妻子身上进行情绪转移。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 17】对于“处女情结（要求女方没有过去）”，你内心最黑暗、最真实的解读是什么？",
+        "options": [
+            { "text": "这是一种传统的美德和忠诚的证明。我希望她只属于我一个人，这样我才能死心塌地为她付出一切。", "value": "rock" },
+            { "text": "这是对“最高级专属权”的占有。一件没有被其他男人碰过的顶级奢侈品，才配得上我投入巨额的婚姻沉没成本。", "value": "paper" },
+            { "text": "我自己可以是个千人斩的海王，但我受不了我的女人在床上比较我和她前任的能力，这是对我雄性尊严的绝对威胁。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 18】你的妻子非常强势且赚得比你多，甚至经常当着外人的面指挥你做这做那。你的防御机制会如何启动？",
+        "options": [
+            { "text": "坦然接受“吃软饭”的人设。只要她真能赚大钱养家，我包揽家务当个全职主夫也没什么不好，面子不值钱。", "value": "rock" },
+            { "text": "疯狂蓄力。暗中动用她提供的平台和资源去铺自己的路，一旦我羽翼丰满，第一件事就是踹掉这个骑在我头上的老女人。", "value": "paper" },
+            { "text": "极度扭曲的自尊心爆发。我会在外面找一个一无是处、极其卑微、离不开我的底层女孩出轨，找回我做男人的高位快感。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 19】如果伴侣在不知情的情况下，弄坏了你价值二十万的限量版收藏品。你的反应是？",
+        "options": [
+            { "text": "虽然心在滴血，但看到她吓坏的样子还是强忍怒火安慰她：“人没事就好，东西坏了就算了。”", "value": "rock" },
+            { "text": "极度震怒，借题发挥。以此为由彻底剥夺她在家里的某些话语权，要求她用长期的低姿态和服从来赎罪还债。", "value": "paper" },
+            { "text": "直接暴走，用极其恶毒的语言对她进行人格侮辱，甚至连摔家里几件贵重物品来发泄情绪，直到她跪着求饶。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 20】你认为“婚姻法”对于男人来说，本质上是什么工具？",
+        "options": [
+            { "text": "是保护家庭稳定、约束双方忠诚的契约，是两个人搭伙过日子最坚实的法律保障。", "value": "rock" },
+            { "text": "是资产重组的合伙人协议。懂行的人可以通过这套协议实现财富的合法洗白或转移，防范对方分走自己打下的江山。", "value": "paper" },
+            { "text": "是极度反人类的枷锁。它强行剥夺了男人传播基因的天性，还试图用法律抢走男人在外潇洒的筹码。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 21】一个刚毕业的实习生小姑娘，极其崇拜你，看你的眼神里全是星星，但她不仅穷，还在工作上经常出错需要你擦屁股。你会？",
+        "options": [
+            { "text": "像个老大哥一样规规矩矩地教她，绝不越界。虽然享受被崇拜，但绝不碰窝边草惹火烧身。", "value": "rock" },
+            { "text": "把她培养成听话的白手套或死忠下属。如果她愿意提供免费的性资源来换取我的指点，我不介意收下，但绝不会让她影响正室。", "value": "paper" },
+            { "text": "极度享受这种降维打击的“爹系快感”。用最廉价的关心把她骗上床，玩腻了之后随便找个工作失误的借口把她开除。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 22】如果你发现未来的准丈母娘极其强势，且明确表示婚后会来帮你们带孩子并常住。你的应对策略是？",
+        "options": [
+            { "text": "忍耐接受。毕竟人家帮带孩子减轻了负担，作为女婿多干点活、少说话，委屈点也认了。", "value": "rock" },
+            { "text": "坚决从根源切断。自己出钱雇顶级月嫂，并且从一开始就立下严厉的规矩，我的领地绝对不允许任何人插手夺权。", "value": "paper" },
+            { "text": "表面笑嘻嘻答应，等丈母娘住进来后，疯狂使唤她干活，或者天天找借口不回家，把一地鸡毛留给妻子去面对。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 23】女方在结婚前夕提出，要求你把原本只写了你名字的婚房加上她的名字，作为她生育的安全感保障。你会？",
+        "options": [
+            { "text": "如果真的深爱且确信能白头偕老，加上就加上吧，毕竟以后都是一家人，不分彼此。", "value": "rock" },
+            { "text": "毫无谈判余地地拒绝。如果她敢用不结婚来威胁，我立刻取消婚礼。这种还没进门就盯上我核心资产的女人绝对不能留。", "value": "paper" },
+            { "text": "用极其高超的话术CPU她：“你爱的是我这个人还是我的房？”用道德绑架把她怼回去，同时拖延时间直到生米煮成熟饭。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 24】你因为某些不可抗力（生病或压力），在长达一年的时间里失去了“性能力（阳痿）”。你最恐惧伴侣会有什么反应？",
+        "options": [
+            { "text": "她觉得我不再是个完整的男人，开始嫌弃我，最终冷冰冰地向我提出离婚。", "value": "rock" },
+            { "text": "她借机夺取我在家里的绝对话语权，用这件耻辱的事情作为把柄，彻底把我踩在脚下变成她的傀儡。", "value": "paper" },
+            { "text": "表面上依然像个好妻子一样照顾我，但私底下早就耐不住寂寞，偷偷跑出去找强壮的男人满足肉欲绿了我。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 25】你觉得一个男人这辈子最大的“成功”是什么？",
+        "options": [
+            { "text": "父母安康，有一份稳定的收入，老婆孩子热炕头，平平安安没有大灾大难度过一生。", "value": "rock" },
+            { "text": "手握重权，跨越阶层。拥有可以随意制定规则、碾压对手的巨额资产，成为家族里说一不二的王。", "value": "paper" },
+            { "text": "体验过世间所有的极乐。玩过最贵的车，睡过最难搞的极品女人，这一生每一天都在享受巅峰的多巴胺刺激。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 26】你发现一直极度温顺乖巧的妻子，偷偷在手机里搜“如果离婚如何能分到更多财产”。你的第一步行动是？",
+        "options": [
+            { "text": "感到恐慌和深深的心寒。试图找她坐下来谈心，问是不是自己哪里做得不够好，试图挽回她的心。", "value": "rock" },
+            { "text": "立刻比她更狠地启动资产隐匿程序。找律师咨询，悄无声息地把所有高价值资产转移到父母名下，等她发难时让她净身出户。", "value": "paper" },
+            { "text": "勃然大怒，直接抢过手机砸碎。对她进行极其凶狠的威吓和PUA，打碎她的独立意志，让她以后连这个念头都不敢有。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 27】关于男人的“向下兼容（找一个各方面都不如自己的底层女孩）”，你认为本质是图什么？",
+        "options": [
+            { "text": "图她贤惠懂事，能吃苦耐劳。底层女孩往往更懂得感恩，只要我对她好，她会死心塌地照顾我和我的家庭。", "value": "rock" },
+            { "text": "图极低的“持有成本”和绝对的“服从性”。这种女孩没有见过世面，最好拿捏，我可以用极低的代价换取一个极具性价比的生育工具。", "value": "paper" },
+            { "text": "图满足自己变态的“救世主情结”。看着她在泥潭里挣扎，我像神一样施舍她一点资源，享受她对我极致的崇拜和肉体献祭。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 28】你们因为重大分歧爆发激烈争吵，女方歇斯底里地哭闹甚至砸东西。你会如何降伏她？",
+        "options": [
+            { "text": "只要不是原则性问题，为了早点平息战火，主动去抱抱她认个错，男人嘛，对老婆低头不丢人。", "value": "rock" },
+            { "text": "用极其冰冷且居高临下的眼神看着她发疯。等她闹够了，冷酷地告诉她：“再闹一次，明天就民政局见，收拾东西滚。”", "value": "paper" },
+            { "text": "直接用更疯批、更大声的怒吼盖过她，甚至一脚踹翻茶几。用绝对的暴力气场和压迫感让她瞬间闭嘴感到恐惧。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 29】如果一个你很看得上的顶级白富美，提出愿意倒贴巨额嫁妆和你结婚，但条件是“你要入赘，且孩子跟女方姓”。你会？",
+        "options": [
+            { "text": "绝对不可能。哪怕穷死饿死，也绝不能丢了祖宗的姓氏和男人的尊严，入赘是男人最大的屈辱。", "value": "rock" },
+            { "text": "权衡利弊后答应。姓氏只是个代号，借用她家族的滔天权势完成我的原始积累，等我彻底掌握权力后，一切规矩由我重写。", "value": "paper" },
+            { "text": "觉得这种被富婆包养、不用奋斗的日子简直太爽了。只要每天哄她开心就能享受荣华富贵，谁在乎孩子跟谁姓？", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 30】面对妻子产后身材走样、肚子上长满妊娠纹，你的内心真实生理反应是？",
+        "options": [
+            { "text": "充满了心疼和敬意。这是她为了我们共同的骨肉留下的勋章，我不仅不会嫌弃，反而会更加深爱并感激她。", "value": "rock" },
+            { "text": "虽然生理上可能会有点排斥，但出于丈夫的责任感绝对不会表现出来。我会花重金给她报产后恢复班，要求她尽快恢复符合我身份的体面外表。", "value": "paper" },
+            { "text": "极其强烈的生理性厌恶甚至下头。根本提不起一点性趣，极大概率会以工作忙为由拒绝交公粮，并开始在外面寻找新鲜肉体。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 31】你发现你最好的兄弟，一直在暗中撩拨你的女朋友。你会怎么做？",
+        "options": [
+            { "text": "极度痛心。分别找他们对质，如果确有其事，我会默默退出这段肮脏的关系，从此和他们俩恩断义绝。", "value": "rock" },
+            { "text": "不动声色。利用这层关系在生意或利益上狠狠敲诈那个兄弟一笔，然后极其冷血地把那个不安分的女人踢出局。", "value": "paper" },
+            { "text": "被激起了极度的狂暴胜负欲。当着那个兄弟的面狠狠操弄或羞辱那个女人，用极端的雄性压制力告诉他：老子的东西你这辈子都不配碰。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 32】你认为自己在两性猎场上，最致命的“短板”是什么？",
+        "options": [
+            { "text": "太老实本分、嘴太笨。不会说那些花言巧语哄女人开心，导致经常被那些只会画大饼的渣男截胡。", "value": "rock" },
+            { "text": "控制欲太强、太算计利益。把婚姻当成冰冷的交易，导致身边很难有愿意和我交付真心、不图钱的纯粹爱情。", "value": "paper" },
+            { "text": "极度缺爱且没有底线。一旦女人给我提供了一点极致的情绪价值和性刺激，我就像着魔一样愿意为她倾家荡产。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 33】女方提出：“结婚可以，但我要求掌管你的所有密码，包括手机、银行卡、各种社交账号，我要绝对透明。”你会？",
+        "options": [
+            { "text": "行，都给你。只要我行得正坐得端，给你密码能让你有安全感，这对我来说没有任何损失。", "value": "rock" },
+            { "text": "你想得美。我的领地绝对不容侵犯，这种试图监视我、扒光我底牌的越界行为，直接触碰了我的逆鳞，大不了不结了。", "value": "paper" },
+            { "text": "大方地全给她。但其实我早就有另一部藏在车里的专用手机和国外的隐秘账户，她看到的“透明”全是我精心编排的戏码。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 34】你和她正在热恋期，突然你前女友（曾经甩了你、现在混得很惨）半夜哭着打电话向你借一万块钱应急。你会？",
+        "options": [
+            { "text": "绝对不借，甚至立刻把电话挂掉并拉黑。现在的她与我无关，我绝不会做任何可能破坏现任感情的蠢事。", "value": "rock" },
+            { "text": "借，但要求她写下极其严苛的欠条，或者要求她用某种让我极度舒适的卑微姿态来求我。花一万块看她被我踩在脚下的狼狈样，很值。", "value": "paper" },
+            { "text": "瞒着现任偷偷转给她，甚至开车去安慰她。极度享受这种被两个女人同时需要、游走在禁忌边缘的危险刺激感。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 35】当你到了五十岁，你觉得自己会对什么样的女人产生最不可抗拒的执念？",
+        "options": [
+            { "text": "那个陪我白手起家、熬过所有苦日子的糟糠之妻。她脸上的皱纹都是为了我长的，她是我此生唯一的归宿。", "value": "rock" },
+            { "text": "那个能在事业上和我势均力敌、极其聪明、能帮我守住家族财富、即使我不举也依然对我忠心耿耿的顶级大青衣。", "value": "paper" },
+            { "text": "二十岁出头、肉体极度紧致、眼神充满涉世未深崇拜感的小姑娘。只有在她们身上，我才能吸取年轻的精气，证明我还没老。", "value": "scissors" }
+        ]
+    },
+    {
+        "text": "【情境 36】如果用一种动物来形容你在两性黑森林里的生存策略，你觉得是？",
+        "options": [
+            { "text": "工蜂。一生辛勤劳作，不问回报，只为了筑起一个安全的巢穴，把所有的资源都奉献给家庭和伴侣。", "value": "rock" },
+            { "text": "雄狮。占据食物链顶端，用绝对的武力和资源划定领地。任何踏入我领地的母狮都必须无条件服从我的规则。", "value": "paper" },
+            { "text": "毒蛇。潜伏在暗处，用最迷人的花纹吸引猎物，然后在对方最沉醉的时刻注入致命的毒液，吞噬殆尽后寻找下一个目标。", "value": "scissors" }
+        ]
+    }
+];
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
