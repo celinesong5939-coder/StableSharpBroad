@@ -4,643 +4,388 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>全息观测档案 - ZIGZAG</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
     <style>
-        :root {
-            --c-bg: #05020a;
-            --c-stone: #94a3b8; 
-            --c-blade: #c5838d; 
-            --c-field: #d4af37; 
-        }
+        :root { --c-bg: #05020a; --c-stone: #94a3b8; --c-blade: #c5838d; --c-field: #d4af37; }
         body { background-color: var(--c-bg); color: #cbd5e1; font-family: 'Noto Serif SC', serif; min-height: 100vh; overflow-x: hidden; scroll-behavior: smooth; }
-
-        /* 黑屏加载 */
-        .black-screen {
-            position: fixed; inset: 0; background: #000; z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 1s ease-in-out, visibility 1s;
-        }
+        .black-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s ease-in-out, visibility 1s; }
         .black-screen.fade-out { opacity: 0; visibility: hidden; }
-
-        /* 交互式三相卡牌阵列 */
-        .cards-stage {
-            position: relative; width: 100%; height: 360px; margin: 20px auto 30px;
-            display: flex; justify-content: center; align-items: center; perspective: 1200px;
-        }
-
-        .tarot-card {
-            position: absolute; width: 160px; height: 260px;
-            background: rgba(20, 5, 30, 0.85); backdrop-filter: blur(12px);
-            border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-            user-select: none; -webkit-tap-highlight-color: transparent;
-        }
-
-        .card-inner-border {
-            position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; pointer-events: none; transition: all 0.5s ease;
-        }
-
+        .cards-stage { position: relative; width: 100%; height: 360px; margin: 20px auto 30px; display: flex; justify-content: center; align-items: center; perspective: 1200px; }
+        .tarot-card { position: absolute; width: 160px; height: 260px; background: rgba(20,5,30,0.85); backdrop-filter: blur(12px); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.7s cubic-bezier(0.34,1.56,0.64,1); user-select: none; }
+        .card-inner-border { position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; pointer-events: none; transition: all 0.5s ease; }
         .card-title { font-size: 3.5rem; font-weight: 900; transition: all 0.5s ease; }
         .card-label { font-size: 0.7rem; letter-spacing: 0.3em; margin-top: 15px; color: #64748b; }
-
-        .pos-center { transform: translate(0, 0) scale(1.15); z-index: 30; opacity: 1; box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px currentColor; }
-        .pos-left { transform: translate(-90px, -20px) rotate(-8deg) scale(0.85); z-index: 20; opacity: 0.5; filter: grayscale(40%); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .pos-right { transform: translate(90px, -20px) rotate(8deg) scale(0.85); z-index: 10; opacity: 0.5; filter: grayscale(40%); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-
+        .pos-center { transform: translate(0,0) scale(1.15); z-index: 30; opacity: 1; box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px currentColor; }
+        .pos-left { transform: translate(-90px,-20px) rotate(-8deg) scale(0.85); z-index: 20; opacity: 0.5; filter: grayscale(40%); }
+        .pos-right { transform: translate(90px,-20px) rotate(8deg) scale(0.85); z-index: 10; opacity: 0.5; filter: grayscale(40%); }
         .stage-hidden .tarot-card { transform: translateY(50px) scale(0.8); opacity: 0; }
-        .pos-left:hover { transform: translate(-100px, -30px) rotate(-10deg) scale(0.9); opacity: 0.8; }
-        .pos-right:hover { transform: translate(100px, -30px) rotate(10deg) scale(0.9); opacity: 0.8; }
         .pos-center .card-inner-border { border-color: currentColor; box-shadow: inset 0 0 15px currentColor; }
         .pos-center .card-title { text-shadow: 0 0 25px currentColor; }
-
-        /* 高级玻璃态 UI 组件 */
-        .glass-panel {
-            background: linear-gradient(180deg, rgba(20, 5, 30, 0.6) 0%, rgba(10, 2, 15, 0.3) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px);
-        }
-        
+        .glass-panel { background: linear-gradient(180deg, rgba(20,5,30,0.6) 0%, rgba(10,2,15,0.3) 100%); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
         .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; }
         .panel-title { font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
         .panel-subtitle { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.2em; color: #64748b; }
-        
         .report-text { line-height: 1.8; text-align: justify; font-weight: 300; font-size: 0.9rem; color: #cbd5e1; white-space: pre-line; }
-        .report-text strong { font-weight: bold; color: #fff; }
-
-        /* 纯 CSS 能量条 */
         .energy-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 8px; }
-        .energy-bar-fill { height: 100%; border-radius: 3px; transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); width: 0%; }
-
-        .slide-fade-enter-active { transition: all 0.5s ease-out; }
-        .slide-fade-leave-active { transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1); }
+        .energy-bar-fill { height: 100%; border-radius: 3px; transition: width 1.5s cubic-bezier(0.22,1,0.36,1); width: 0%; }
+        .slide-fade-enter-active, .slide-fade-leave-active { transition: all 0.5s ease; }
         .slide-fade-enter-from { transform: translateX(20px); opacity: 0; }
         .slide-fade-leave-to { transform: translateX(-20px); opacity: 0; }
-
         .fade-up { opacity: 0; transform: translateY(20px); transition: all 1s ease; }
         .fade-up.visible { opacity: 1; transform: translateY(0); }
-
-        /* 保存按钮特效 */
-        .save-btn {
-            background: linear-gradient(135deg, #2a113a 0%, #14051e 100%);
-            border: 1px solid #d4af37; color: #d4af37;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-            transition: all 0.3s ease;
-        }
+        .save-btn { background: linear-gradient(135deg, #2a113a 0%, #14051e 100%); border: 1px solid #d4af37; color: #d4af37; box-shadow: 0 0 20px rgba(212,175,55,0.2); transition: all 0.3s ease; }
         .save-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
-    <div id="report-app">
-        <div class="black-screen" :class="{ 'fade-out': !isBlackScreen }">
-            <i class="fa-solid fa-microchip fa-spin text-4xl text-[#d4af37] mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.6)]"></i>
-            <div class="text-[#d4af37] tracking-[0.4em] text-xs font-bold uppercase mb-2">云端解析中...</div>
-            <div class="text-slate-500 tracking-[0.2em] text-[10px] font-mono">{{ loadingText }}</div>
+<div id="report-app">
+    <div class="black-screen" :class="{ 'fade-out': !isBlackScreen }">
+        <i class="fa-solid fa-microchip fa-spin text-4xl text-[#d4af37] mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.6)]"></i>
+        <div class="text-[#d4af37] tracking-[0.4em] text-xs font-bold uppercase mb-2">云端解析中...</div>
+        <div class="text-slate-500 tracking-[0.2em] text-[10px] font-mono">{{ loadingText }}</div>
+    </div>
+
+    <div v-if="reportData" class="container mx-auto px-4 pb-20 max-w-2xl pt-6">
+        <header class="text-center mb-2 fade-up" :class="{ 'visible': isRevealed }">
+            <div class="inline-block px-3 py-1 rounded-full bg-white/5 border border-[#d4af37]/30 text-[10px] tracking-widest text-[#d4af37] mb-3">ᛉ 潜意识观测报告 ᛟ</div>
+            <h1 class="text-2xl font-black text-white tracking-widest">{{ reportData.archetypeTitle }}</h1>
+            <p class="text-[10px] text-[#c5838d] mt-2 tracking-widest animate-pulse"><i class="fa-solid fa-hand-pointer mr-1"></i> 点击对应卡牌，揭示隐藏人格</p>
+        </header>
+
+        <div class="cards-stage" :class="{ 'stage-hidden': !isRevealed }">
+            <div class="tarot-card" :class="cardPositions.sub" :style="{ color: elements[reportData.s].color }" @click="selectCard('sub')">
+                <div class="card-inner-border"></div>
+                <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.sub === 'pos-center'">MASK</div>
+                <div class="card-title">{{ elements[reportData.s].char }}</div>
+                <div class="card-label">社交面具</div>
+            </div>
+            <div class="tarot-card" :class="cardPositions.missing" :style="{ color: elements[reportData.w].color }" @click="selectCard('missing')">
+                <div class="card-inner-border"></div>
+                <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.missing === 'pos-center'">LACK</div>
+                <div class="card-title">{{ elements[reportData.w].char }}</div>
+                <div class="card-label">缺失盲区</div>
+            </div>
+            <div class="tarot-card" :class="cardPositions.main" :style="{ color: elements[reportData.m].color }" @click="selectCard('main')">
+                <div class="card-inner-border"></div>
+                <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.main === 'pos-center'">CORE</div>
+                <div class="card-title">{{ elements[reportData.m].char }}</div>
+                <div class="card-label">绝对内核</div>
+            </div>
         </div>
 
-        <div v-if="reportData" class="container mx-auto px-4 pb-20 max-w-2xl pt-6">
-            
-            <header class="text-center mb-2 fade-up" :class="{ 'visible': isRevealed }">
-                <div class="inline-block px-3 py-1 rounded-full bg-white/5 border border-[#d4af37]/30 text-[10px] tracking-widest text-[#d4af37] mb-3">ᛉ 潜意识观测报告 ᛟ</div>
-                <h1 class="text-2xl font-black text-white tracking-widest">{{ reportData.archetypeTitle }}</h1>
-                <p class="text-[10px] text-[#c5838d] mt-2 tracking-widest animate-pulse"><i class="fa-solid fa-hand-pointer mr-1"></i> 点击对应卡牌，揭示隐藏人格</p>
-            </header>
-
-            <div class="cards-stage" :class="{ 'stage-hidden': !isRevealed }">
-                <div class="tarot-card" :class="cardPositions.sub" :style="{ color: elements[reportData.s].color }" @click="selectCard('sub')">
-                    <div class="card-inner-border"></div>
-                    <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.sub === 'pos-center'">MASK</div>
-                    <div class="card-title">{{ elements[reportData.s].char }}</div>
-                    <div class="card-label">社交面具</div>
-                </div>
-
-                <div class="tarot-card" :class="cardPositions.missing" :style="{ color: elements[reportData.w].color }" @click="selectCard('missing')">
-                    <div class="card-inner-border"></div>
-                    <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.missing === 'pos-center'">LACK</div>
-                    <div class="card-title">{{ elements[reportData.w].char }}</div>
-                    <div class="card-label">缺失盲区</div>
-                </div>
-
-                <div class="tarot-card" :class="cardPositions.main" :style="{ color: elements[reportData.m].color }" @click="selectCard('main')">
-                    <div class="card-inner-border"></div>
-                    <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.main === 'pos-center'">CORE</div>
-                    <div class="card-title">{{ elements[reportData.m].char }}</div>
-                    <div class="card-label">绝对内核</div>
-                </div>
-            </div>
-
-            <div class="glass-panel fade-up mb-8" :class="{ 'visible': isRevealed }" style="transition-delay: 0.3s">
-                <transition name="slide-fade" mode="out-in">
-                    <div :key="activeCard">
-                        <div class="panel-header">
-                            <div class="panel-title" :style="{ color: currentElementInfo.color }">
-                                <i :class="currentSectionData.icon"></i>
-                                {{ currentSectionData.title }}
-                            </div>
-                            <div class="panel-subtitle">{{ currentSectionData.subtitle }}</div>
-                        </div>
-                        <div class="report-text" v-html="currentSectionData.content"></div>
+        <!-- 柱状图前置 -->
+        <div class="glass-panel fade-up mb-6" :class="{ 'visible': isRevealed }">
+            <h3 class="text-sm font-bold text-white tracking-widest mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-chart-column text-[#d4af37]"></i> 三相能量矩阵
+            </h3>
+            <div class="space-y-4">
+                <div v-for="item in energyStats" :key="item.key">
+                    <div class="flex justify-between text-xs tracking-widest">
+                        <span :style="{ color: item.color }">{{ item.name }}</span>
+                        <span class="text-slate-400">{{ item.score }} 赫兹</span>
                     </div>
-                </transition>
-            </div>
-            
-            <div class="space-y-6 fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 0.6s">
-                <div class="glass-panel">
-                    <h3 class="text-sm font-bold text-white tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-column text-[#d4af37]"></i> 三相能量矩阵</h3>
-                    <div class="space-y-4">
-                        <div v-for="item in energyStats" :key="item.key">
-                            <div class="flex justify-between text-xs tracking-widest">
-                                <span :style="{ color: item.color }">{{ item.name }}</span>
-                                <span class="text-slate-400">{{ item.score }} 赫兹</span>
-                            </div>
-                            <div class="energy-bar-bg">
-                                <div class="energy-bar-fill" :style="{ width: isRevealed ? item.percent + '%' : '0%', backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}` }"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass-panel border-l-2 border-l-[#d4af37]">
-                        <h3 class="text-sm font-bold text-[#d4af37] tracking-widest mb-4"><i class="fa-solid fa-briefcase mr-2"></i> 职业星辰</h3>
-                        <ul class="space-y-3">
-                            <li v-for="(career, idx) in reportData.careers" :key="idx" class="text-xs text-slate-300 leading-relaxed">
-                                <strong class="text-white">✦ {{ career.name }}</strong><br>
-                                <span class="text-slate-500">{{ career.reason }}</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="glass-panel border-l-2 border-l-[#c5838d]">
-                        <h3 class="text-sm font-bold text-[#c5838d] tracking-widest mb-4"><i class="fa-regular fa-heart mr-2"></i> 亲密关系法则</h3>
-                        <div class="text-xs space-y-3 text-slate-300 leading-relaxed">
-                            <p><strong class="text-white">理想共鸣：</strong>{{ reportData.relationship.ideal }}</p>
-                            <p class="text-slate-400">{{ reportData.relationship.desc }}</p>
-                            <p class="mt-2 p-2 bg-[#14051e] border border-rose-900/50 rounded"><strong class="text-[#c5838d]">避坑警告：</strong>{{ reportData.relationship.avoid }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass-panel border-t border-[#d4af37]/30">
-                    <h3 class="text-sm font-bold text-white tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-seedling text-[#d4af37]"></i> 进化路径 · 破局指南</h3>
-                    <ul class="space-y-3">
-                        <li v-for="(adv, idx) in reportData.growth.items" :key="idx" class="text-xs text-slate-300 leading-relaxed flex items-start gap-2">
-                            <i class="fa-solid fa-diamond text-[#d4af37] text-[8px] mt-1 opacity-60"></i>
-                            <span>{{ adv }}</span>
-                        </li>
-                    </ul>
-                    <div v-if="reportData.growth.extra" class="mt-4 p-3 bg-[#c5838d]/10 border-l-2 border-[#c5838d] rounded text-xs text-[#c5838d] leading-relaxed">
-                        {{ reportData.growth.extra }}
+                    <div class="energy-bar-bg">
+                        <div class="energy-bar-fill" :style="{ width: isRevealed ? item.percent + '%' : '0%', backgroundColor: item.color }"></div>
                     </div>
                 </div>
             </div>
-            
-            <div class="mt-12 text-center fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 0.9s">
-                <button @click="generatePoster" :disabled="isGeneratingPoster" class="save-btn w-full max-w-xs mx-auto py-4 rounded-full text-sm tracking-[0.2em] font-bold flex items-center justify-center gap-3">
-                    <template v-if="isGeneratingPoster">
-                        <i class="fa-solid fa-circle-notch fa-spin"></i> 绘制星轨图中...
-                    </template>
-                    <template v-else>
-                        <i class="fa-solid fa-download"></i> 保存完整观测档案
-                    </template>
-                </button>
-                <footer class="text-center pt-10 pb-4 fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 0.9s">
-                <p class="text-[9px] text-slate-600 leading-relaxed max-w-sm mx-auto px-4 text-justify">
-                    三相坍缩 · 本报告基于你在测试中的选择生成，人格具有动态性，请以成长视角看待。
-                </p>
-                
-                <div class="mt-8 mb-4 text-center fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 0.9s">
+        </div>
 
+        <!-- 主解析面板（三卡牌内容切换） -->
+        <div class="glass-panel fade-up mb-8" :class="{ 'visible': isRevealed }" style="transition-delay: 0.3s">
+            <transition name="slide-fade" mode="out-in">
+                <div :key="activeCard">
+                    <div class="panel-header">
+                        <div class="panel-title" :style="{ color: currentElementInfo.color }">
+                            <i :class="currentSectionData.icon"></i>
+                            {{ currentSectionData.title }}
+                        </div>
+                        <div class="panel-subtitle">{{ currentSectionData.subtitle }}</div>
+                    </div>
+                    <div class="report-text" v-html="currentSectionData.content"></div>
+                </div>
+            </transition>
+        </div>
+
+        <!-- 额外新增板块：你在两性关系中的最大优势 -->
+        <div class="glass-panel fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 0.8s">
+            <h3 class="text-sm font-bold text-[#d4af37] tracking-widest mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-crown"></i> 你在两性关系中的最大优势
+            </h3>
+            <div class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
+                {{ reportData.advantage }}
+            </div>
+        </div>
+
+        <!-- 新增板块：搞钱与避坑指南（暗黑版成长建议） -->
+        <div class="glass-panel border-t border-[#d4af37]/30 fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 1.0s">
+            <h3 class="text-sm font-bold text-white tracking-widest mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-[#d4af37]"></i> 搞钱与避坑指南
+            </h3>
+            <ul class="space-y-3">
+                <li v-for="(adv, idx) in reportData.darkGrowth.items" :key="idx" class="text-xs text-slate-300 leading-relaxed flex items-start gap-2">
+                    <i class="fa-solid fa-diamond text-[#d4af37] text-[8px] mt-1 opacity-60"></i>
+                    <span>{{ adv }}</span>
+                </li>
+            </ul>
+            <div v-if="reportData.darkGrowth.extra" class="mt-4 p-3 bg-[#c5838d]/10 border-l-2 border-[#c5838d] rounded text-xs text-[#c5838d] leading-relaxed">
+                {{ reportData.darkGrowth.extra }}
+            </div>
+        </div>
+
+        <div class="mt-12 text-center fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 0.9s">
+            <button @click="generatePoster" :disabled="isGeneratingPoster" class="save-btn w-full max-w-xs mx-auto py-4 rounded-full text-sm tracking-[0.2em] font-bold flex items-center justify-center gap-3">
+                <template v-if="isGeneratingPoster"><i class="fa-solid fa-circle-notch fa-spin"></i> 绘制星轨图中...</template>
+                <template v-else><i class="fa-solid fa-download"></i> 保存完整观测档案</template>
+            </button>
+            <footer class="text-center pt-10 pb-4">
+                <p class="text-[9px] text-slate-600 leading-relaxed max-w-sm mx-auto px-4 text-justify">三相坍缩 · 本报告基于你在测试中的选择生成，人格具有动态性，请以成长视角看待。</p>
                 <div class="mt-8 text-[#4a154b] tracking-[0.3em] text-[10px] font-bold">ZIGZAG STUDIO</div>
-            </div>
+            </footer>
         </div>
 
+        <!-- 海报模态框 -->
         <transition name="slide-fade">
             <div v-if="showPosterModal" class="fixed inset-0 z-[10000] bg-black/95 flex flex-col items-center justify-center p-6 backdrop-blur-md">
                 <div class="text-[#d4af37] text-xs tracking-widest mb-4 font-bold"><i class="fa-solid fa-camera mr-2"></i> 长按下方图片保存至相册</div>
-                
                 <div class="overflow-y-auto w-full max-w-md rounded-lg shadow-[0_0_40px_rgba(212,175,55,0.2)] border border-[#d4af37]/30" style="max-height: 75vh;">
                     <img :src="posterBase64" class="w-full block rounded-lg" alt="全息档案海报">
                 </div>
-
                 <button @click="showPosterModal = false" class="mt-8 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
         </transition>
 
+        <!-- 隐藏海报渲染板 -->
         <div id="hidden-poster-board" style="position: absolute; top: -9999px; left: -9999px; width: 800px; background: #05020a; color: #cbd5e1; padding: 60px; box-sizing: border-box;" v-if="reportData">
             <div style="text-align: center; margin-bottom: 50px; border-bottom: 2px solid #d4af37; padding-bottom: 40px;">
                 <div style="color: #d4af37; font-size: 16px; letter-spacing: 0.4em; margin-bottom: 10px;">ZIGZAG ARCHETYPE DECODE</div>
                 <h1 style="font-size: 56px; font-weight: 900; color: #fff; letter-spacing: 0.2em; margin: 0;">{{ reportData.archetypeTitle }}</h1>
             </div>
-
             <div v-for="(sec, key) in reportData.sections" :key="key" style="margin-bottom: 40px; padding: 30px; background: rgba(20,5,30,0.8); border-left: 4px solid #d4af37; border-radius: 8px;">
                 <div style="font-size: 24px; font-weight: bold; color: #d4af37; margin-bottom: 5px;">{{ sec.title }}</div>
                 <div style="font-size: 14px; color: #64748b; letter-spacing: 0.2em; margin-bottom: 20px;">{{ sec.subtitle }}</div>
                 <div style="font-size: 18px; line-height: 1.8; color: #e2e8f0; white-space: pre-line;" v-html="sec.content"></div>
             </div>
-
             <div style="display: flex; gap: 30px; margin-bottom: 40px;">
                 <div style="flex: 1; padding: 30px; background: rgba(20,5,30,0.8); border-radius: 8px;">
-                    <div style="font-size: 22px; font-weight: bold; color: #d4af37; margin-bottom: 20px;">职业星辰</div>
-                    <ul style="padding: 0; margin: 0; list-style: none;">
-                        <li v-for="c in reportData.careers" style="margin-bottom: 15px; font-size: 16px;">
-                            <strong style="color: #fff;">✦ {{ c.name }}</strong><br>
-                            <span style="color: #94a3b8;">{{ c.reason }}</span>
-                        </li>
-                    </ul>
+                    <div style="font-size: 22px; font-weight: bold; color: #d4af37; margin-bottom: 20px;">你在两性关系中的最大优势</div>
+                    <div style="font-size: 18px; line-height: 1.6; color: #e2e8f0;">{{ reportData.advantage }}</div>
                 </div>
                 <div style="flex: 1; padding: 30px; background: rgba(20,5,30,0.8); border-radius: 8px;">
-                    <div style="font-size: 22px; font-weight: bold; color: #c5838d; margin-bottom: 20px;">亲密关系法则</div>
-                    <div style="font-size: 16px; color: #e2e8f0; line-height: 1.6;">
-                        <p><strong style="color: #fff;">理想共鸣：</strong>{{ reportData.relationship.ideal }}</p>
-                        <p style="color: #94a3b8; margin-bottom: 15px;">{{ reportData.relationship.desc }}</p>
-                        <p style="color: #c5838d; background: rgba(197,131,141,0.1); padding: 10px; border-radius: 4px;"><strong style="color: #c5838d;">避坑：</strong>{{ reportData.relationship.avoid }}</p>
-                    </div>
+                    <div style="font-size: 22px; font-weight: bold; color: #c5838d; margin-bottom: 20px;">搞钱与避坑指南</div>
+                    <ul style="font-size: 16px; line-height: 1.6;">
+                        <li v-for="adv in reportData.darkGrowth.items" style="margin-bottom: 12px;">• {{ adv }}</li>
+                        <li v-if="reportData.darkGrowth.extra" style="color: #c5838d; margin-top: 12px;">{{ reportData.darkGrowth.extra }}</li>
+                    </ul>
                 </div>
             </div>
-
-            <div style="padding: 30px; background: rgba(20,5,30,0.8); border-radius: 8px; margin-bottom: 40px;">
-                <div style="font-size: 24px; font-weight: bold; color: #fff; margin-bottom: 20px;">进化路径 · 破局指南</div>
-                <ul style="padding-left: 20px; margin: 0; color: #e2e8f0; font-size: 18px; line-height: 1.8;">
-                    <li v-for="adv in reportData.growth.items" style="margin-bottom: 10px;">{{ adv }}</li>
-                </ul>
-                <div v-if="reportData.growth.extra" style="margin-top: 20px; padding: 15px; background: rgba(197,131,141,0.1); border-left: 4px solid #c5838d; color: #c5838d; font-size: 16px;">
-                    {{ reportData.growth.extra }}
-                </div>
-            </div>
-
             <div style="text-align: center; margin-top: 60px; border-top: 1px solid #333; padding-top: 30px;">
                 <h3 style="font-size: 24px; color: #fff; margin-bottom: 10px;">ZIGZAG STUDIO·水木骨头潜意识观测系统</h3>
                 <p style="font-size: 14px; color: #64748b;">长按保存·记录你的赛博档案</p>
             </div>
         </div>
     </div>
-    <script>
-        // ======= 视觉配置 =======
-        const elementsConfig = {
-            rock: { char: '石', color: '#94a3b8', name: '石头' },
-            scissors: { char: '剪', color: '#c5838d', name: '剪刀' },
-            paper: { char: '布', color: '#d4af37', name: '布' }
+</div>
+
+<script>
+    const elementsConfig = {
+        rock: { char: '石', color: '#94a3b8', name: '石头' },
+        scissors: { char: '剪', color: '#c5838d', name: '剪刀' },
+        paper: { char: '布', color: '#d4af37', name: '布' }
+    };
+
+    // ================= 核心文案（大幅扩充，情感+搞钱，避免面面俱到） =================
+    function getCoreSexualStrategy(main, gender, scores) {
+        const isMale = gender === 'male';
+        const mainScore = scores[main];
+        const profiles = {
+            rock: `你的“石头”特质得分 ${scores.rock} 分。在两性关系中，你信奉“付出换真心”。你习惯用稳定、忠诚和实际付出来表达爱——帮对方解决问题、记住细节、默默守护。这让你在长择市场非常吃香，因为你身上有一种“靠谱”的气场，让人想把你规划进未来。
+
+但你的软肋在于：你容易成为“供养者”。对方可能享受你的好，却不一定给你对等的激情。你总以为“我对她/他足够好，对方就会珍惜”，可现实里，有些人要的是心跳，不是安稳。你最大的风险是被当成备胎、提款机，甚至短择对象——因为你的好太容易得到了。
+
+${isMale ? '作为石头男，你是婚恋市场上的“老实人”标签持有者。很多女性会把你当作“接盘”首选，但年轻时会嫌你无趣。你需要学会在付出前设立门槛，让对方先为你投入。' : '作为石头女，你是“好嫁风”的天然代表，温柔顾家，长辈最爱。但你要小心被短择男当免费保姆，你的“贤惠”必须配上“有脾气”才不会被欺负。'}
+
+你的优势是“抗风险能力强”，只要选对人，你就是婚姻里最稳的那根桩。但前提是：你得学会筛选，而不是一味付出。`
+            ,
+            scissors: `你的“剪刀”特质得分 ${scores.scissors} 分。在两性关系中，你靠“情绪价值”和“性魅力”狩猎。你太懂怎么让人上头了——若即若离、制造惊喜、让对方猜不透。你享受追逐，也擅长被追逐。和你在一起的人，会觉得恋爱体验拉满，像坐过山车一样刺激。
+
+但你的风险在于：容易吸引只想短择的玩家，也容易在平淡期厌倦。你可能不知不觉就成了别人口中的“海王/海后”，或者被贴上“不靠谱”的标签。你习惯用自己的魅力去掌控节奏，但真正的长期关系需要的是“定力”，而不是“游戏力”。
+
+${isMale ? '作为剪刀男，你是“渣男”高危人群，但如果你愿意收心，你的伴侣会体验极致的恋爱感。你需要警惕的是：别把“新鲜感”当成爱的标准，否则你永远找不到终点。' : '作为剪刀女，你是“狐狸精”体质，能让男人为你疯狂，但要小心被当成玩物。你的魅力是你的武器，但也是你的软肋——真正想娶你的人，会怕你太野。'}
+
+你的优势是“情绪供给能力”，你能让一段关系永远保持温度。但你要学会的是：把这份能力用在值得的人身上，而不是到处放火。`
+            ,
+            paper: `你的“布”特质得分 ${scores.paper} 分。在两性关系中，你信奉“实力换地位”。你习惯用资源、人脉、社会价值来主导关系，让对方离不开你提供的物质或机会。你讨厌失控，所以你会提前布局——婚前协议、财产规划、甚至对方的职业发展你都要插一手。
+
+这让你在婚恋市场上非常有话语权，因为你手里握着实实在在的筹码。但你的风险是：容易把伴侣当“项目”管理，忽略了情感流动。对方可能感激你，却不一定爱你。你付出的资源如果换不回真心，最后就会变成“被利用”。
+
+${isMale ? '作为布男，你是“钻石王老五”模板，能吸引慕强女性，但也要小心“捞女”盯上你的钱。你的资源是你的铠甲，但别让它变成囚笼。' : '作为布女，你是“大女主”典范，能吸引慕强的异性，但也要让对方感受到你的柔软。你的独立是你的魅力，但适当示弱反而能让关系更平衡。'}
+
+你的优势是“能带领对方成长”，和你在一起的人，物质上不会差。但你要记住：爱不是交易，资源换不来真心，只有真心才能换真心。`
         };
+        return profiles[main];
+    }
 
-        // ======================= 完美还原的教授级文案数据核心 =======================
+    function getAttraction(main, second, gender, scores) {
+        const isMale = gender === 'male';
+        const combo = `${main}_${second}`;
+        const combos = {
+            rock_scissors: `在异性眼中，你是一个“有安全感的危险人物”。你既有石头的踏实稳重（让ta觉得可以托付），又有剪刀的撩人手段（让ta心跳加速）。别人会觉得你“人设反差”，既适合结婚，又充满情趣。但注意，这种组合容易让对方误以为你是“浪子回头”，如果处理不好，会变成“老实人玩花活”的尴尬。你的性张力在于“老实人突然的浪漫”，会让对方又爱又怕。`,
+            rock_paper: `在异性眼中，你是一个“有实力的老实人”。你的石头属性让人觉得你可靠，布属性又暗示你手里有资源。别人会觉得你是“理想配偶”——既能过日子，又能带飞。但要注意，对方可能同时看上你的钱和你的好，一旦资源缩水，吸引力也会打折。你的性张力比较内敛，是那种“越相处越觉得稳”的类型。`,
+            scissors_rock: `在异性眼中，你是一个“玩累了会收心”的人。你的剪刀魅力让人上头，但石头的一面又让人隐约觉得你其实很传统。别人容易对你产生“拯救欲”，想成为你的最后一站。但危险在于，你可能永远在“玩”与“定”之间摇摆。你的性张力在于“危险但好像能改”，这种不确定性最让人上瘾。`,
+            scissors_paper: `在异性眼中，你是一个“高段位玩家”。你的剪刀负责撩，布负责砸资源，简直就是“霸总+情圣”合体。你能吸引慕强的人，也能吸引图刺激的人。但你的高段位也让人不敢轻易交付真心，怕被你算计。你的性张力是顶级的，因为你懂得用资源和魅力同时碾压对方。`,
+            paper_rock: `在异性眼中，你是一个“低调的王者”。你的布属性让你有实力，石头属性让你不张扬。别人会觉得你“深藏不露”，值得长期投资。但你容易忽略情感细节，让对方觉得你“只会给钱不会给爱”。你的性张力在于“神秘感”，让人想探究你到底藏着多少底牌。`,
+            paper_scissors: `在异性眼中，你是一个“危险而迷人”的存在。你的布让你有资源，剪刀让你懂情趣，简直就是“毒药”。你能吸引各种类型的人，但你的控制欲和博弈心也会让人害怕。别人会一边上头一边防备你。你的性张力是“控制与被控制”的拉扯感，让人既想靠近又想逃离。`
+        };
+        return combos[combo] || `你的主副型组合让异性对你产生复杂感受：既有吸引力，又有距离感。`;
+    }
 
-        // 1. 主类型画像 (完整原版)
-        function getMainProfile(main, gender, scores) {
-            const isMale = gender === 'male';
-            const hisHer = isMale ? '他' : '她';
-            const profiles = {
-                rock: {
-                    title: `石头型 · ${isMale ? '磐石之固' : '大地之基'}`,
-                    content: `你的“石头”特质得分 ${scores.rock} 分，说实话，在如今这个浮躁的世界里，像你这样能把“靠谱”刻进骨子里的人，真的不多见。你可能自己都没意识到，你天生就是那种别人遇到事会第一个想到的人——不是因为你能说会道，而是因为你总能把事情稳稳地接住。
+    function getMissedReason(blind, gender, scores) {
+        const blindScore = scores[blind];
+        const isMale = gender === 'male';
+        const reasons = {
+            rock: `你的“石头”得分只有 ${blindScore} 分，这意味着你最容易因为“缺乏耐心”错过理想伴侣。你可能在关系进入平淡期后就觉得无聊，开始寻找新的刺激，却不知道真正的好伴侣是在平淡中一起成长的。${isMale ? '男性缺石头容易显得“没长性”，让想结婚的对象望而却步。' : '女性缺石头容易显得“太飘”，让靠谱的男人不敢投入。'}你错过的不是不够好的人，而是那些愿意陪你慢慢变好的人。记住：激情会消退，但责任和陪伴才是长期关系的根基。`,
+            scissors: `你的“剪刀”得分只有 ${blindScore} 分，这意味着你最容易因为“缺乏情趣”错过理想伴侣。你可能太务实，忽略了爱情需要仪式感和情绪价值。对方可能因为你的“无趣”而离开，即使你条件再好。${isMale ? '男性缺剪刀容易变成“直男癌”，让伴侣觉得不被重视。' : '女性缺剪刀容易变成“贤妻良母模板”，让伴侣觉得没有激情。'}你错过的不是不珍惜你的人，而是那些想要与你共享心跳的人。学学怎么制造惊喜吧，哪怕一次都行。`,
+            paper: `你的“布”得分只有 ${blindScore} 分，这意味着你最容易因为“缺乏资源”错过理想伴侣。你可能太清高，不愿谈钱，但现实是，优质的婚恋市场是赤裸裸的价值交换。你可能会因为经济条件、社会地位不够而失去机会，即使你人很好。${isMale ? '男性缺布容易被对方父母嫌弃，或吸引不到高价值女性。' : '女性缺布容易被当成“小女人”，在关系里缺乏话语权。'}你错过的不是势利眼，而是那些希望伴侣有实力共同承担未来的人。搞钱吧，这不是俗气，是现实。`
+        };
+        return reasons[blind];
+    }
 
-                    你做事习惯按部就班，不是因为你缺乏想象力，而是你深信“慢就是快”。你对承诺有着近乎固执的坚持，答应了的事，哪怕再难也会想办法完成。在感情里，你不太会说甜言蜜语，但你会记得对方提过的每一件小事，然后在某个时刻默默实现。
+    function getHuntingAdvantage(main, second, gender, scores) {
+        const isMale = gender === 'male';
+        const combo = `${main}_${second}`;
+        const advantages = {
+            rock_scissors: `你的最大优势是“稳中带骚”。你能给对方安全感，又能在关键时刻制造惊喜。在搞钱上，你适合做“副业搞钱”或“靠口碑变现”；在关系里，你是那种能让伴侣“离不开你的好，又忘不了你的坏”的人。你的优势在于“不可替代性”——别人学不来你的踏实，也模仿不了你的浪漫。`,
+            rock_paper: `你的最大优势是“资源靠谱”。你不仅自己能赚钱，还能帮伴侣赚钱。在关系里，你是“军师型伴侣”，能帮对方规划事业，让对方对你产生依赖。你的搞钱天赋在于“整合资源”和“长期投资”。你擅长把关系经营成“命运共同体”，让对方离不开你提供的价值。`,
+            scissors_rock: `你的最大优势是“灵动能收”。你擅长用情绪价值换资源，用魅力撬动杠杆。在搞钱上，你适合“销售”“个人IP”这类靠人设和沟通的领域。在关系里，你是“让你开心又让你上进”的伴侣。你的优势在于“情绪杠杆”——能用最小的成本撬动最大的情感回报。`,
+            scissors_paper: `你的最大优势是“王炸组合”。你既有情绪价值又有资源价值，简直是“人形印钞机”。在搞钱上，你适合“创业”“资本运作”；在关系里，你能让伴侣既崇拜你又离不开你。但小心别把伴侣当“工具人”。你的优势在于“降维打击”，无论情场还是职场，你都站在食物链顶端。`,
+            paper_rock: `你的最大优势是“实力不显山露水”。你闷声发大财，默默为家庭打基础。在关系里，你是“定海神针”，让伴侣有底气。你的搞钱天赋在于“稳健投资”和“人脉变现”。你习惯用实力说话，不屑于玩虚的，这种踏实本身就是一种吸引力。`,
+            paper_scissors: `你的最大优势是“布局能力”。你懂人性，会博弈，能在两性关系里掌控节奏。在搞钱上，你适合“做局”“资源整合”，是天然的操盘手。你的优势在于“长线思维”，别人看一步，你看十步，总能提前锁定胜局。`
+        };
+        let base = advantages[combo] || `你的优势是${elements[main].name}的${elements[second].name}的结合，既有核心竞争力又有灵活手段。`;
+        if (isMale) base += ` 作为男性，你的优势在传统婚恋市场很吃香，但记得要真心换真心。`;
+        else base += ` 作为女性，你的优势让你在择偶中占据主动，但别忘了爱自己。`;
+        return base;
+    }
 
-                    不过，这份稳定有时也会让你吃亏。当周围人都在变通时，你可能还在原地坚持旧规则；当你觉得“我已经做得够好了，为什么对方还是不满意”时，其实对方可能只是想要你一句“我在乎你”，而不是又一个解决问题的方案。
+    function getDarkGrowthAdvice(main, second, gender, scores) {
+        const advices = {
+            rock: [
+                `💰 搞钱建议：利用你的“靠谱”人设，做需要信任度的工作（如保险、理财顾问、高端服务）。但别把全部身家押在伴侣身上，你的钱要掌握在自己手里。你可以开联名账户，但一定要留后路。`,
+                `❤️ 避坑指南：小心那些只享受你的付出却不给你名分的人。你的“好用”会被短择玩家利用，学会设置底线，让对方先为你付出。比如：不借钱、不轻易同居、要求公开关系。`,
+                `🔮 关系升级：试着在感情里“作”一点，偶尔发脾气、提要求，看看对方是否真的在乎你的感受。真正的爱不会因为你“作”就离开，反而会更紧张你。`,
+                `💸 搞钱进阶：你的耐心和细心是财富密码。可以考虑做“知识付费”或“手艺人”，把靠谱变成品牌。`,
+                `⚠️ 情感陷阱：你容易吸引“情绪吸血鬼”——那些把你当树洞的人。记住，你不是心理医生，不要用爱去拯救谁。`
+            ],
+            scissors: [
+                `💰 搞钱建议：你的情绪价值和社交能力是变现利器。适合做博主、销售、个人IP、高端社交。但要警惕“赚快钱”的陷阱，小心被割韭菜。学点理财，别把钱花在无意义的社交上。`,
+                `❤️ 避坑指南：你容易吸引“情绪索取者”——那些只图你开心但不愿负责的人。学会筛选，别让烂人消耗你的能量。拉黑那些只找你聊天不约见面的人。`,
+                `🔮 关系升级：尝试在关系里展现“脆弱”和“需要被照顾”的一面，真正的爱是双向奔赴。偶尔示弱，反而能让对方更想保护你。`,
+                `💸 搞钱进阶：你的“变现”能力一流，但要找到可持续的模式。别总想着赚快钱，做个人IP要深耕内容，销售要积累客户。`,
+                `⚠️ 情感陷阱：你容易把“新鲜感”误认为“爱情”，结果总是高开低走。学会区分“心动”和“合适”，别总为情绪买单。`
+            ],
+            paper: [
+                `💰 搞钱建议：你的资源整合能力是王牌。适合做管理、投资、资源中介、家族办公室。但别把感情当生意，钱可以赚，但爱不能算。记得在签婚前协议时，也留点温情。`,
+                `❤️ 避坑指南：小心“捞女/捞男”，那些只图你钱的人会把你榨干再找下一个。婚前协议、财产公证不是算计，是保护。观察对方是否愿意为你付出时间、精力，而不是只盯着你的钱。`,
+                `🔮 关系升级：学着给对方提供情绪价值，而不是只给钱。偶尔示弱，让对方有机会为你付出。比如，假装生病让对方照顾你，看看对方反应。`,
+                `💸 搞钱进阶：你的格局适合做“生态位”投资，布局产业而不是赚快钱。同时要学会用钱生钱，别让资产闲置。`,
+                `⚠️ 情感陷阱：你容易把“控制”当成“爱”，让对方窒息。真正的爱是让对方自由生长，而不是修剪成你想要的形状。`
+            ]
+        };
+        let items = advices[main];
+        let extra = '';
+        if (main === 'paper' && second === 'scissors') extra = `⚠️ 高危预警：你的布剪组合容易让你成为“精致的利己主义者”，在搞钱上无往不利，但在感情里可能孤独终老。建议你找一个“石头”或“剪刀石”型伴侣，用你的资源换ta的真心。记住，钱能买到服务，买不到真心。`;
+        else if (main === 'scissors' && second === 'paper') extra = `⚠️ 高危预警：你的剪布组合让你容易成为“海王”，搞钱上靠信息差赚钱，但感情上容易透支信任。建议你留点真诚，否则迟早翻车。真诚是最好的套路。`;
+        else if (main === 'rock' && second === 'paper') extra = `⚠️ 注意：你的石布组合让你像个“大家长”，付出很多却总被嫌管得多。试着把“你应该”换成“你觉得呢”，你会收获更健康的关系。`;
+        else if (main === 'rock' && second === 'scissors') extra = `⚠️ 注意：你的石剪组合让你在“安稳”和“刺激”间摇摆，关键时刻容易犹豫。下次遇到选择，给自己一个截止时间，选错了也没关系，至少你向前走了。`;
+        return { items, extra };
+    }
 
-                    ${isMale ? '作为石头型男性，社会期待你“顶天立地”，这让你习惯了把压力往肚子里咽。' : '作为石头型女性，你常常是朋友和家人的定心丸，但也别忘了，你也有权利偶尔脆弱。'}
-                    
-                    你的可靠是你的金饭碗，但如果能再给自己一点“弹性”，偶尔允许计划被打乱，允许自己说“我不知道该怎么办”，你会发现，真正在乎你的人，并不会因此看轻你。`
-                },
-                scissors: {
-                    title: `剪刀型 · ${isMale ? '锋芒之刃' : '灵动之羽'}`,
-                    content: `你的“剪刀”特质得分 ${scores.scissors} 分，这意味着你天生就不喜欢被框住。你可能早就发现，自己总能迅速嗅到“什么才是更好的”，然后在别人还在犹豫时就已经行动了。在社交场合，你几乎不用费力就能成为焦点；在职场，你总能在关键时刻找到破局点。
+    // ================= Vue 实例 =================
+    const { createApp, ref, computed, onMounted } = Vue;
+    createApp({
+        setup() {
+            const isBlackScreen = ref(true);
+            const loadingText = ref('Decrypting URL Parameters...');
+            const isRevealed = ref(false);
+            const reportData = ref(null);
+            const elements = elementsConfig;
+            const energyStats = ref([]);
+            const isGeneratingPoster = ref(false);
+            const showPosterModal = ref(false);
+            const posterBase64 = ref('');
+            const activeCard = ref('main');
+            const cardPositions = ref({ main: 'pos-center', sub: 'pos-left', missing: 'pos-right' });
 
-                    你享受追逐高价值的人和事，这让你活得热气腾腾。你讨厌一成不变，所以你会不断给自己制造新鲜感——换工作、换城市、换兴趣，对你来说都不是难事。在感情里，你也是最懂得制造浪漫的那一个，和你在一起，生活永远不会无聊。
-
-                    但这份灵动也是一把双刃剑。当关系进入平淡期，你可能会不由自主地感到焦躁，甚至怀疑“是不是这个人不对”。你习惯了自己掌控节奏，却很少停下来问问对方想要什么。有时你身边的人会感叹：“你什么都好，就是让人觉得抓不住。”
-
-                    ${isMale ? '作为剪刀型男性，你身上有股“浪子”的魅力，但真正的英雄主义，是在看透生活的平淡后，依然愿意为一个人停留。' : '作为剪刀型女性，你的飒爽和独立让人羡慕，但别忘了，偶尔依赖别人，也是一种勇气。'}
-                    
-                    你的适应力是你的超能力，但如果能再给自己一点“定力”，学会在平淡中挖掘趣味，你会发现，深度比广度更能给你安全感。`
-                },
-                paper: {
-                    title: `布型 · ${isMale ? '经纬之网' : '万象之怀'}`,
-                    content: `你的“布”特质得分 ${scores.paper} 分，我猜你从小就比别人想得多一步。你天生就知道怎么把零散的人和事编织成一张网，然后在这张网里找到自己的位置。在朋友中，你往往是那个组织聚会的人；在职场上，你总能看见别人看不见的全局。
-
-                    你习惯用“付出”来表达爱——为家人规划未来、为伴侣解决难题、为团队争取资源。你觉得，爱一个人就是要把最好的都给他，甚至提前把路铺好。这份担当让人敬佩，但你可能没意识到，有时候你的“为你好”会让对方觉得“你根本不懂我要什么”。
-
-                    你的控制欲其实源自你对失控的恐惧。你害怕事情不在掌控中，所以你总想做得更多。但有趣的是，当你试着放手，你会发现对方反而更主动了；当你承认自己也有不知道怎么办的时候，身边的人反而更愿意靠近你。
-
-                    ${isMale ? '作为布型男性，你常被视为“成功者模板”，但真正的强大，是敢于展示脆弱。' : '作为布型女性，你常被称为“大女主”，但真正的女王，也懂得把舞台让给别人。'}
-                    
-                    你的大局观是你的王牌，但如果能再给自己一点“松弛”，允许事情不按计划发展，你会看到计划之外的风景，往往更动人。`
-                }
-            };
-            return profiles[main].content;
-        }
-
-        // 2. 副类型影响说明 (完整原版)
-        function getSecondaryInfluence(main, second, gender, scores) {
-            const combo = `${main}_${second}`;
-            const isMale = gender === 'male';
-            const diff = scores[main] - scores[second];
-            const isBalanced = Math.abs(diff) < 6;
-
-            const combos = {
-                rock_scissors: {
-                    start: `你的“石头”和“剪刀”一个 ${scores.rock} 分，一个 ${scores.scissors} 分，`,
-                    body: `${isBalanced ? '两者几乎势均力敌，让你成了一个“稳中带皮”的矛盾体”' : '石头占主导，但你身上始终有股“不安分”的劲儿'}。你既能在关键时刻靠得住，又能在需要时出其不意。`,
-                    details: `比如朋友遇到麻烦，你会先冷静帮他想办法（石头），但解决方案往往还带着点“剑走偏锋”的创意（剪刀）。在感情里，你既是那个默默记住对方喜好的人，也是会突然制造惊喜的人。`,
-                    caution: `不过，当石头和剪刀同时发力时，你可能会在“求稳”和“求变”之间反复摇摆，有时会让身边的人觉得你“忽冷忽热”。`,
-                    genderTip: isMale ? '对男性来说，这种组合让你既有担当又不乏情趣，但要小心别让“求变”盖过了“求稳”。' : '对女性来说，你既有韧性又有灵气，但要警惕别因为一时新鲜感而忽略了已经稳定的关系。'
-                },
-                rock_paper: {
-                    start: `你的“石头”和“布”一个 ${scores.rock} 分，一个 ${scores.paper} 分，`,
-                    body: `${isBalanced ? '两者几乎并驾齐驱，让你成了“厚德载物”的领导者' : '石头比布更突出，让你像一座沉稳的堡垒'}。你既有执行力，又懂得如何调配资源。`,
-                    details: `在公司，你可能是那个既能亲自下场搞定细节，又能协调各方推进项目的核心人物。在家里，你既会默默修好漏水的水管（石头），也会提前规划好全家旅行（布）。`,
-                    caution: `但石头和布加在一起，容易让你变成“大家长”——什么都想管，什么都要操心。有时你会不自觉地替别人做决定，然后说“我是为你好”。`,
-                    genderTip: isMale ? '作为男性，你容易把“照顾”等同于“控制”，试着问一句“你觉得呢”比直接给方案更有效。' : '作为女性，你很容易成为家人依赖的对象，但也记得留点空间，让别人为你分担。'
-                },
-                scissors_rock: {
-                    start: `你的“剪刀”和“石头”一个 ${scores.scissors} 分，一个 ${scores.rock} 分，`,
-                    body: `${isBalanced ? '两者几乎平衡，让你成了“机敏的实干家”' : '剪刀略胜一筹，让你总是先看到机会再稳健落地'}。你既能快速反应，又能扎实推进。`,
-                    details: `工作中，你往往是那个最先嗅到行业变化的人，但不会贸然行动，而是会评估风险后再出手。在感情里，你既能制造浪漫，又能给对方实实在在的陪伴。`,
-                    caution: `但剪刀的“快”和石头的“慢”有时会打架：你想抓住机会，又怕冒风险，结果在犹豫中错失良机。`,
-                    genderTip: isMale ? '作为男性，你的灵活和稳重结合得很好，但要学会在关键时刻果断一点。' : '作为女性，你既有主见又懂得变通，只是别让“想太多”耽误了行动。'
-                },
-                scissors_paper: {
-                    start: `你的“剪刀”和“布”一个 ${scores.scissors} 分，一个 ${scores.paper} 分，`,
-                    body: `${isBalanced ? '两者几乎平起平坐，让你成了一个“既会打仗又会布局”的战略家' : '剪刀更突出，让你更像一个“机会捕手”'}。你总能第一时间发现高价值目标，并用最快的速度编织资源网。`,
-                    details: `在谈判桌上，你既能用犀利的话术直击要害（剪刀），也能用背后的资源网络碾压对手（布）。在生活中，你总能找到最有趣的人、最划算的体验，而且总能说服别人跟你一起。`,
-                    caution: `但这种组合的副作用是：别人可能觉得你“太精了”，甚至有点“算计”。你习惯性地计算投入产出，但有些东西——比如信任、真诚——是算不出来的。`,
-                    genderTip: isMale ? '作为男性，你的魄力和手段会让你在事业上走得很快，但要留神别让身边人觉得你“只用利益衡量一切”。' : '作为女性，你的能力和魅力会让很多人欣赏，但也要让人看到你“不设防”的一面。'
-                },
-                paper_rock: {
-                    start: `你的“布”和“石头”一个 ${scores.paper} 分，一个 ${scores.rock} 分，`,
-                    body: `${isBalanced ? '两者几乎平分秋色，让你成了“稳中求进”的掌舵者' : '布明显更高，让你更像一个“资源型领导者”'}。你既有远见，又懂得脚踏实地。`,
-                    details: `你可能是那个既能画出宏伟蓝图，又能带领团队一步步落实的人。在家庭中，你既是定海神针，也是对外关系的润滑剂。`,
-                    caution: `但布和石头叠加，容易让你变得固执。你相信自己的判断，一旦决定就很难被说服。你可能没意识到，有时你拒绝的不是别人的建议，而是“失控”的感觉。`,
-                    genderTip: isMale ? '作为男性，你的稳重和魄力让你成为大家依赖的对象，但偶尔示弱反而会赢得更多尊重。' : '作为女性，你的格局和韧性让你能扛事，但也别忘了偶尔卸下铠甲，让伴侣有机会保护你。'
-                },
-                paper_scissors: {
-                    start: `你的“布”和“剪刀”一个 ${scores.paper} 分，一个 ${scores.scissors} 分，`,
-                    body: `${isBalanced ? '两者几乎不相上下，让你成了“谋略与机变并存”的掌局者' : '布明显更高，让你更像一个“掌控型战略家”'}。你习惯先布下大局，再灵活调整，所以总能比别人看得远、走得稳。`,
-                    details: `工作中，你擅长先搭好框架，再根据情况随时调整策略，让对手永远猜不到你的下一步。在感情里，你会主动规划未来，但也懂得在对方情绪低落时用幽默化解。`,
-                    caution: `但这份掌控力和机变结合起来，可能会让你在不经意间把关系当成“项目”来管理。你习惯性地分析对方的价值、计算投入产出，但真正的亲密，恰恰发生在你放弃计算的那一刻。`,
-                    genderTip: isMale ? '作为布剪男，你的野心和手腕会让你在社会上游刃有余，但请记得：真正的王者不是把别人当棋子，而是让棋子也成为棋手。' : '作为布剪女，你的智慧和灵活会让你在人群中闪闪发光，但也要让人看到你“不设防”的柔软。'
-                }
-            };
-
-            const comboData = combos[combo];
-            if (!comboData) return `你的主型与副型形成了独特的混合人格，这在测试中比较少见。你的核心驱动力由主型决定，但副型为你增添了不同的色彩。`;
-            return `${comboData.start} ${comboData.body} \n\n${comboData.details} \n\n${comboData.caution} \n\n${comboData.genderTip}`;
-        }
-
-        // 3. 盲区影响 (完整原版)
-        function getBlindSpotImpact(blind, gender, scores) {
-            const blindScore = scores[blind];
-            const isMale = gender === 'male';
-
-            const impacts = {
-                rock: {
-                    intro: `你的“石头”得分只有 ${blindScore} 分，这可能是你最“不擅长”的一块。`,
-                    body: `你可能会发现，自己很难忍受“没有进展”的状态——无论是事业、感情还是兴趣爱好，一旦进入平台期，你就开始坐不住，总想搞点新花样。这不是你的错，而是你天性里就缺乏“守着”的基因。`,
-                    details: `别人能在一份工作、一段关系里熬过平淡期，你却容易焦躁。你习惯用“换”来解决问题：换工作、换圈子、换目标……但有时候，真正的问题不是环境不够好，而是你还没学会在不变中发现新意。`,
-                    advice: `一个很有效的练习：找一件你需要长期坚持但短期没回报的事（比如学一门乐器、每天散步半小时），承诺坚持三个月，期间不许放弃。你会发现，稳定本身也能带来一种踏实的安全感。`,
-                    genderTip: isMale ? '对男性而言，社会常期待你“稳”，但你的低石头让你显得更有闯劲。只是要注意，别让“闯”变成“逃”。' : '对女性而言，你的低石头让你活得轻盈，但也要明白，有些东西需要“守”才能看到价值。'
-                },
-                scissors: {
-                    intro: `你的“剪刀”得分只有 ${blindScore} 分，这意味着你在“灵活应变”上比较吃亏。`,
-                    body: `你可能常常觉得，别人能三言两语搞定的局面，你却要花更多时间去适应。你不擅长快速抓住机会，在需要争取利益时，也总是慢半拍。你习惯按规则办事，但规则有时候就是用来打破的。`,
-                    details: `在社交中，你可能不是那个能活跃气氛的人，甚至有点社恐。在职场，你更倾向于做执行者，而不是开拓者。这不是缺点，但会让你错过一些本可以抓住的机会。`,
-                    advice: `不妨从“小冒险”开始：试着在一个陌生场合主动介绍自己，或者在会议上表达一个还没想成熟的点子。你会发现，即使搞砸了，天也不会塌下来，反而会让你慢慢长出“弹性”。`,
-                    genderTip: isMale ? '对男性而言，社会常期待你“主动出击”，但你的低剪刀让你更愿意守成。这没什么不好，只是偶尔要逼自己一把。' : '对女性而言，你的低剪刀让你显得温柔沉静，但也要学会在关键时刻为自己争取。'
-                },
-                paper: {
-                    intro: `你的“布”得分只有 ${blindScore} 分，这意味着你在“掌控资源”和“影响他人”方面相对薄弱。`,
-                    body: `你可能不太喜欢做决策，更愿意跟着别人走。在团队里，你往往是那个默默支持的人，而不是拍板的人。你不太会调动资源，也不太擅长为自己争取地位。`,
-                    details: `在关系中，你可能更习惯被照顾，而不是主动规划。这让你显得随和，但有时也会让你觉得“自己说了不算”。你总觉得别人比你更有办法，但其实，你的专注和真诚本身就是一种力量。`,
-                    advice: `试着从小事开始练习“掌控”：比如组织一次朋友聚会，或者在一个项目中主动认领统筹的角色。你会发现，领导力不是天生的，而是练出来的。`,
-                    genderTip: isMale ? '对男性而言，社会常期待你“有野心”，但你的低布让你更关注个人成长。这没有错，只是偶尔要学着把目光放远一点。' : '对女性而言，你的低布让你更倾向于配合，但也要记得，你的声音同样重要。'
-                }
-            };
-
-            const data = impacts[blind];
-            return `${data.intro} \n\n${data.body} \n\n${data.details} \n\n${data.advice} \n\n${data.genderTip}`;
-        }
-
-        // 4. 成长建议 (完整恢复 5 条)
-        function getGrowthAdvice(main, second, gender, scores) {
-            const baseAdvice = {
-                rock: [
-                    `🌱 试着每周做一件“没计划”的事：比如临时答应朋友的邀约，或者走一条陌生的路回家。你会发现，失控并不等于灾难，反而可能带来惊喜。`,
-                    `🗣️ 当你觉得“我已经做得够好了”时，试着问对方一句：“你希望我怎么做？”有时候，对方需要的不是解决方案，而是一句“我在听”。`,
-                    `🎁 在亲密关系里，偶尔制造一点“无用”的浪漫——比如一束花、一张手写卡片。你可能会觉得“这有什么用”，但对方会因此觉得被看见。`,
-                    `🧘 允许自己偶尔“摆烂”：不必事事亲力亲为，把事情交给别人，哪怕结果不如你意，也要忍住不插手。这是一种信任练习。`,
-                    `🔄 把“忠诚”升级为“共建”：与其单方面付出，不如邀请对方一起规划未来。两个人的期待，比一个人的牺牲更有力量。`
-                ],
-                scissors: [
-                    `📚 选择一个需要长期投入的领域（比如学一门语言、练书法），承诺坚持一年以上。即使中途觉得无聊，也要逼自己熬过去。你会发现，深度比广度更能滋养你。`,
-                    `👂 在对话中，先别急着给建议，试着复述对方的感受：“听起来你很生气，是吗？”这会让对方觉得你懂他，而不是在解决问题。`,
-                    `⏳ 在重要关系中，主动建立一个“固定仪式”：比如每周日晚上一起看电影，或者每天睡前聊十分钟。这会帮你锚定一段关系，而不是总想着换下一个。`,
-                    `🔍 当你想放弃一段关系或工作时，先问自己：“我是真的不喜欢，还是只是遇到了瓶颈？”如果是后者，试着在旧瓶里装新酒，而不是急着换瓶子。`,
-                    `🤝 把“竞争”思维换成“共赢”思维：在做决策时，多想一步“这件事怎么让参与的人都能获益”。真正的信任，来自让别人赢。`
-                ],
-                paper: [
-                    `🙌 每周找一件事完全交给别人决定：比如晚餐吃什么、周末去哪玩。你可能会手痒想插手，但忍住，观察对方的反应。你会发现，信任比控制更让人轻松。`,
-                    `❤️ 试着做一件“不求回报”的事：比如匿名捐款，或者帮朋友一个忙后绝口不提。这能帮你区分“付出”和“交易”。`,
-                    `👂 在做重要决策前，主动征求三个人的意见，并把“你怎么看”挂在嘴边。你会收获不同的视角，也让对方感到被尊重。`,
-                    `🌀 允许计划被打乱：当事情没按你预想发展时，试着说一句“有意思，看看会怎样”。把失控当作探索，而不是失败。`,
-                    `🌟 从“管理者”升级为“赋能者”：与其告诉别人怎么做，不如问“你需要什么支持？”帮助别人成长，比替别人解决问题更有成就感。`
-                ]
-            };
-            
-            let extra = '';
-            if (main === 'paper' && second === 'scissors') {
-                extra = `✨ 特别提醒：你的布（${scores.paper}分）和剪刀（${scores.scissors}分）让你既有掌控力又有机变力，但这份精明有时会让人不敢靠近。建议你每月做一次“反向练习”：主动暴露一个弱点，或者承认自己“不知道”。这不会削弱你的权威，反而会让你更可亲。`;
-            } else if (main === 'scissors' && second === 'paper') {
-                extra = `✨ 特别提醒：你的剪刀（${scores.scissors}分）和布（${scores.paper}分）让你既能捕捉机会又能整合资源，但你可能习惯了“一个人赢”。试着在合作中主动让利一次，你会发现，让别人赢，你才能赢得更久。`;
-            } else if (main === 'rock' && second === 'paper') {
-                extra = `✨ 特别提醒：你的石头（${scores.rock}分）和布（${scores.paper}分）让你成为大家依赖的对象，但你可能不知不觉成了“大家长”。试着把“你应该”换成“你觉得呢”，你会收获更健康的关系。`;
-            } else if (main === 'rock' && second === 'scissors') {
-                extra = `✨ 特别提醒：你的石头（${scores.rock}分）和剪刀（${scores.scissors}分）让你既有耐心又有灵气，但你可能在关键时刻犹豫不决。下次遇到选择，给自己一个截止时间，选错了也没关系，至少你向前走了。`;
-            }
-            
-            return { items: baseAdvice[main], extra };
-        }
-
-        // 5. 职业星辰 (完整原版)
-        function getCareerDirections(main, scores) {
-            const careers = {
-                rock: [
-                    { name: '财务/审计', reason: `你的细心和耐心（石头${scores.rock}分）让你能忍受枯燥的数字和流程，这在别人看来是煎熬，对你却是定心丸。` },
-                    { name: '工程技术', reason: `你习惯按标准执行，能把复杂的技术细节打磨到极致。` },
-                    { name: '行政管理', reason: `你擅长维持秩序，让组织高效运转，是老板眼里的“靠谱担当”。` },
-                    { name: '教育/科研', reason: `你耐得住寂寞，愿意长期深耕，适合需要时间积累的学术或教学岗位。` }
-                ],
-                scissors: [
-                    { name: '市场营销/公关', reason: `你的敏锐（剪刀${scores.scissors}分）让你能第一时间抓住热点，用创意快速出圈。` },
-                    { name: '创业/自由职业', reason: `你讨厌被束缚，喜欢自己掌控节奏，适合在不确定性中寻找机会。` },
-                    { name: '销售/商务拓展', reason: `你善于博弈，能在谈判桌上用巧劲撬动大单。` },
-                    { name: '创意/设计', reason: `你的脑子里总有新点子，而且能迅速把想法落地。` }
-                ],
-                paper: [
-                    { name: '企业管理/高管', reason: `你的大局观（布${scores.paper}分）让你能看见别人看不见的全局，适合带团队打硬仗。` },
-                    { name: '项目管理', reason: `你擅长统筹资源，能协调多方力量，让复杂项目有条不紊。` },
-                    { name: '投资/金融', reason: `你的长线思维和风险意识，让你在资本市场里稳扎稳打。` },
-                    { name: '公共事务/政府关系', reason: `你擅长建立网络，能在复杂体系中找到关键节点，推动事情向前。` }
-                ]
-            };
-            return careers[main];
-        }
-
-        // 6. 亲密关系 (完整原版)
-        function getRelationshipMatch(main, gender, scores) {
-            const isMale = gender === 'male';
-            const matchMap = {
-                rock: {
-                    ideal: '剪刀型（互补）或石头型（同类）',
-                    desc: `你的稳定（石头${scores.rock}分）需要一个能带给你活力的伴侣。${isMale ? '剪刀型女性' : '剪刀型男性'}能帮你打破沉闷，让你体验生活的另一种可能；而石头型伴侣则能和你共建稳稳的城堡，只是要注意别让日子过成“两张白纸”。`,
-                    avoid: '纯布型可能让你感到窒息，因为对方的掌控欲会和你“按规矩来”的性格产生冲突。'
-                },
-                scissors: {
-                    ideal: '石头型（互补）或布型（辅助）',
-                    desc: `你的灵动（剪刀${scores.scissors}分）需要一个能托住你的伴侣。${isMale ? '石头型女性' : '石头型男性'}能给你安全感，让你放心去飞；布型伴侣则能为你提供资源支持，但小心别让对方的“管理”磨掉了你的棱角。`,
-                    avoid: '另一剪刀型可能让关系变成“双剑互刺”，两个都想赢的人，容易把爱当成战场。'
-                },
-                paper: {
-                    ideal: '石头型（互补）或剪刀型（激发）',
-                    desc: `你的掌控力（布${scores.paper}分）需要一个能平衡你的伴侣。${isMale ? '石头型女性' : '石头型男性'}的忠诚和耐心能给你稳定的后方；剪刀型伴侣则能为你注入活力，让你不至于变成“独裁者”。`,
-                    avoid: '另一布型容易变成“权力争夺战”，两个都想当家的人，需要格外注意沟通。'
-                }
-            };
-            return matchMap[main];
-        }
-
-        // ======================= Vue UI 逻辑绑定 =======================
-        const { createApp, ref, computed, onMounted } = Vue;
-
-        createApp({
-            setup() {
-                const isBlackScreen = ref(true);
-                const loadingText = ref('Decrypting URL Parameters...');
-                const isRevealed = ref(false);
-                const reportData = ref(null);
-                const elements = elementsConfig;
-                const energyStats = ref([]);
-
-                // 海报生成状态
-                const isGeneratingPoster = ref(false);
-                const showPosterModal = ref(false);
-                const posterBase64 = ref('');
-
-                const activeCard = ref('main'); 
-                const cardPositions = ref({ main: 'pos-center', sub: 'pos-left', missing: 'pos-right' });
-
-                onMounted(() => {
-                    const params = new URLSearchParams(window.location.search);
-                    const code = params.get('code') || 'DEMO_MODE';
-                    const g = params.get('g') === 'male' ? 'male' : 'female';
-                    const m = params.get('m') || 'rock';
-                    const s = params.get('s') || 'paper';
-                    const w = params.get('w') || 'scissors';
-                    
-                    const sRock = parseInt(params.get('scoreRock')) || (m==='rock'?28:s==='rock'?22:10);
-                    const sScissors = parseInt(params.get('scoreScissors')) || (m==='scissors'?28:s==='scissors'?22:10);
-                    const sPaper = parseInt(params.get('scorePaper')) || (m==='paper'?28:s==='paper'?22:10);
-                    const maxScore = Math.max(sRock, sScissors, sPaper, 36);
-
-                    // 分数对象传参修复
-                    const scoresObj = { rock: sRock, scissors: sScissors, paper: sPaper };
-
-                    energyStats.value = [
-                        { key: 'rock', name: '磐石底座', score: sRock, color: '#94a3b8', percent: (sRock/maxScore)*100 },
-                        { key: 'scissors', name: '锋刃张力', score: sScissors, color: '#c5838d', percent: (sScissors/maxScore)*100 },
-                        { key: 'paper', name: '覆天力场', score: sPaper, color: '#d4af37', percent: (sPaper/maxScore)*100 }
-                    ];
-
-                    reportData.value = {
-                        m, s, w, g, code,
-                        // 在 REPORT.HTML 的 onMounted 里，我们将数据结构改成这样：
-reportData.value = {
-    // ... 前面的基础变量保持不变
-    archetypeTitle: `${elements[m].char}${elements[s].char}${g === 'male' ? '男' : '女'}`,
-    sections: {
-        main: { 
-            title: `【绝对内核】潜意识底色`, 
-            subtitle: 'CORE INSTINCT', 
-            icon: 'fa-solid fa-cube', 
-            content: getDarkCore(m, g, scoresObj), // 新版暗黑解析
-            elKey: m 
-        },
-        sub: { 
-            title: `【异性眼中的你】性张力与社交面具`, 
-            subtitle: 'SEXUAL TENSION & MASK', 
-            icon: 'fa-solid fa-mask', 
-            content: getAttraction(m, s, g, scoresObj), // 聚焦男女吸引力
-            elKey: s 
-        },
-        missing: { 
-            title: `【致命伤】被剥削的盲区`, 
-            subtitle: 'FATAL VULNERABILITY', 
-            icon: 'fa-solid fa-link-slash', 
-            content: getFatalFlaw(w, g, scoresObj), // 聚焦渣男渣女吸血陷阱
-            elKey: w 
-        }
-    },
-    advantage: getHuntingAdvantage(m, s, g), // 狩猎优势（搞钱/撒娇/性张力）
-    growth: getDarkAdvice(m, s, g) // 极度现实的避坑与搞钱指南
-};
-
-                    setTimeout(() => { loadingText.value = `Access Key [${code}] Verified.`; }, 600);
-                    setTimeout(() => { loadingText.value = 'Rendering Tri-Phase Stage...'; }, 1200);
-                    setTimeout(() => {
-                        isBlackScreen.value = false;
-                        setTimeout(() => { isRevealed.value = true; }, 800); 
-                    }, 1800);
-                });
-
-                const selectCard = (cardKey) => {
-                    if (activeCard.value === cardKey) return; 
-                    const oldCenterCard = activeCard.value;
-                    const clickedCardPos = cardPositions.value[cardKey];
-                    cardPositions.value[oldCenterCard] = clickedCardPos;
-                    cardPositions.value[cardKey] = 'pos-center';
-                    activeCard.value = cardKey;
+            onMounted(() => {
+                const params = new URLSearchParams(window.location.search);
+                const code = params.get('code') || 'DEMO_MODE';
+                const g = params.get('g') === 'male' ? 'male' : 'female';
+                const m = params.get('m') || 'rock';
+                const s = params.get('s') || 'paper';
+                const w = params.get('w') || 'scissors';
+                const sRock = parseInt(params.get('scoreRock')) || (m==='rock'?28:s==='rock'?22:10);
+                const sScissors = parseInt(params.get('scoreScissors')) || (m==='scissors'?28:s==='scissors'?22:10);
+                const sPaper = parseInt(params.get('scorePaper')) || (m==='paper'?28:s==='paper'?22:10);
+                const maxScore = Math.max(sRock, sScissors, sPaper, 36);
+                const scoresObj = { rock: sRock, scissors: sScissors, paper: sPaper };
+                energyStats.value = [
+                    { key: 'rock', name: '磐石底座', score: sRock, color: '#94a3b8', percent: (sRock/maxScore)*100 },
+                    { key: 'scissors', name: '锋刃张力', score: sScissors, color: '#c5838d', percent: (sScissors/maxScore)*100 },
+                    { key: 'paper', name: '覆天力场', score: sPaper, color: '#d4af37', percent: (sPaper/maxScore)*100 }
+                ];
+                reportData.value = {
+                    m, s, w, g, code,
+                    archetypeTitle: `${elements[m].char}${elements[s].char}${g === 'male' ? '男' : '女'}`,
+                    sections: {
+                        main: { title: `【绝对内核】你在两性关系中的底色`, subtitle: 'CORE INSTINCT', icon: 'fa-solid fa-cube', content: getCoreSexualStrategy(m, g, scoresObj), elKey: m },
+                        sub: { title: `【异性眼中的你】性张力与社交面具`, subtitle: 'SEXUAL TENSION & MASK', icon: 'fa-solid fa-mask', content: getAttraction(m, s, g, scoresObj), elKey: s },
+                        missing: { title: `【致命伤】你会因为什么错过理想伴侣`, subtitle: 'FATAL VULNERABILITY', icon: 'fa-solid fa-link-slash', content: getMissedReason(w, g, scoresObj), elKey: w }
+                    },
+                    advantage: getHuntingAdvantage(m, s, g, scoresObj),
+                    darkGrowth: getDarkGrowthAdvice(m, s, g, scoresObj)
                 };
+                setTimeout(() => { loadingText.value = `Access Key [${code}] Verified.`; }, 600);
+                setTimeout(() => { loadingText.value = 'Rendering Tri-Phase Stage...'; }, 1200);
+                setTimeout(() => { isBlackScreen.value = false; setTimeout(() => { isRevealed.value = true; }, 800); }, 1800);
+            });
 
-                const currentSectionData = computed(() => reportData.value ? reportData.value.sections[activeCard.value] : {});
-                const currentElementInfo = computed(() => {
-                    if (!reportData.value) return {};
-                    return elements[currentSectionData.value.elKey];
-                });
-
-                // ================= 海报生成逻辑 =================
-                const generatePoster = async () => {
-                    isGeneratingPoster.value = true;
-                    try {
-                        const board = document.getElementById('hidden-poster-board');
-                        const canvas = await html2canvas(board, {
-                            backgroundColor: '#05020a',
-                            scale: 2, 
-                            useCORS: true
-                        });
-                        
-                        posterBase64.value = canvas.toDataURL('image/jpeg', 0.85);
-                        showPosterModal.value = true;
-                    } catch (error) {
-                        console.error('海报生成失败:', error);
-                        alert('海报生成失败，请稍后重试。');
-                    } finally {
-                        isGeneratingPoster.value = false;
-                    }
-                };
-
-                return {
-                    isBlackScreen, loadingText, isRevealed, reportData, elements, energyStats,
-                    activeCard, cardPositions, selectCard, currentSectionData, currentElementInfo,
-                    isGeneratingPoster, showPosterModal, posterBase64, generatePoster
-                };
-            }
-        }).mount('#report-app');
-    </script>
+            const selectCard = (cardKey) => {
+                if (activeCard.value === cardKey) return;
+                const oldCenterCard = activeCard.value;
+                const clickedCardPos = cardPositions.value[cardKey];
+                cardPositions.value[oldCenterCard] = clickedCardPos;
+                cardPositions.value[cardKey] = 'pos-center';
+                activeCard.value = cardKey;
+            };
+            const currentSectionData = computed(() => reportData.value ? reportData.value.sections[activeCard.value] : {});
+            const currentElementInfo = computed(() => {
+                if (!reportData.value) return {};
+                return elements[currentSectionData.value.elKey];
+            });
+            const generatePoster = async () => {
+                isGeneratingPoster.value = true;
+                try {
+                    const board = document.getElementById('hidden-poster-board');
+                    const canvas = await html2canvas(board, { backgroundColor: '#05020a', scale: 2, useCORS: true });
+                    posterBase64.value = canvas.toDataURL('image/jpeg', 0.85);
+                    showPosterModal.value = true;
+                } catch (error) { console.error(error); alert('海报生成失败'); }
+                finally { isGeneratingPoster.value = false; }
+            };
+            return {
+                isBlackScreen, loadingText, isRevealed, reportData, elements, energyStats,
+                activeCard, cardPositions, selectCard, currentSectionData, currentElementInfo,
+                isGeneratingPoster, showPosterModal, posterBase64, generatePoster
+            };
+        }
+    }).mount('#report-app');
+</script>
 </body>
 </html>
