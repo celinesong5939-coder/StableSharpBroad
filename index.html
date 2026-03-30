@@ -908,28 +908,69 @@
                     phase.value = 'unlock';
                 };
 
-                const verifyAndUnlock = () => {
-                    const codeToVerify = unlockCode.value.trim();
-                    if (!codeToVerify) {
-                        unlockError.value = "请填写观测密钥";
-                        return;
-                    }
-                    
-                    unlockError.value = "";
-                    isVerifying.value = true;
-                    
-                    const params = new URLSearchParams({
-                        g: gender.value,
-                        m: finalArchetype.value.main,
-                        s: finalArchetype.value.second,
-                        w: finalArchetype.value.blindSpot,
-                        code: codeToVerify 
+                // ==========================================
+            // 卡密验证与解锁跳转逻辑
+            // ==========================================
+            const verifyAndUnlock = async () => {
+                const codeInput = unlockCode.value.trim();
+                
+                if (!codeInput) {
+                    unlockError.value = '请输入您的专属密钥';
+                    return;
+                }
+                
+                isVerifying.value = true;
+                unlockError.value = '';
+
+                try {
+                    // ⚠️ 呼叫云端智能门卫，验证卡密
+                    const response = await fetch('https://vmbvxttldbkkklnpuyro.supabase.co/functions/v1/verify_code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 👇 极其关键：放行通行证，把你的 Anon Public Key 贴在 Bearer 后面
+                            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlmb3ludmhqYnJtdnNvbWt2bnltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMzU4NDIsImV4cCI6MjA4OTgxMTg0Mn0.SLJdSDbeKcndts33y9dMLWISrREm1e8x_Qs7IuH-bKo'
+                        },
+                        body: JSON.stringify({ code: codeInput })
                     });
+
+                    const data = await response.json();
+
+                    // 如果后端返回 400 报错（比如密码错、次数用光）
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.error || '验证失败，请检查密钥是否正确');
+                    }
+
+                    // =====================================
+                    // 门卫放行！开始拼接当前用户的测试分数，准备跳转
+                    // ⚠️ 注意：下面的 m, s, w, scores 请替换为你实际算分出来的变量名！
+                    // =====================================
+                    const params = new URLSearchParams();
                     
-                    setTimeout(() => {
-                        window.location.href = `report.html?${params.toString()}`;
-                    }, 800);
-                };
+                    // 1. 基础属性与性别
+                    params.set('g', userGender.value); // 比如 'male' 或 'female'
+                    params.set('m', mainType.value);   // 比如 'rock'
+                    params.set('s', subType.value);    // 比如 'scissors'
+                    params.set('w', blindType.value);  // 比如 'paper'
+                    
+                    // 2. 真实得分
+                    params.set('scoreRock', scores.value.rock);
+                    params.set('scoreScissors', scores.value.scissors);
+                    params.set('scorePaper', scores.value.paper);
+                    
+                    // 3. 防伪卡密带过去
+                    params.set('code', codeInput);
+
+                    // 丝滑跳转到报告渲染页
+                    window.location.href = `report.html?${params.toString()}`;
+
+                } catch (error) {
+                    // 把后端的毒舌报错（如"该密钥已达到最大使用次数"）直接显示给用户看
+                    unlockError.value = error.message;
+                } finally {
+                    isVerifying.value = false;
+                }
+            };
 
                 const currentQuestion = computed(() => questions.value[currentQIndex.value]);
                 const progressPercent = computed(() => questions.value.length === 0 ? 0 : ((currentQIndex.value + 1) / questions.value.length) * 100);
