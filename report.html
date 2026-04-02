@@ -3,333 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>全息观测档案 - ZIGZAG</title>
+    <title>ZIGZAG - 本我观测档案</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
     <style>
-        :root { --c-bg: #05020a; --c-stone: #94a3b8; --c-blade: #c5838d; --c-field: #d4af37; }
-        body { background-color: var(--c-bg); color: #cbd5e1; font-family: 'Noto Serif SC', serif; min-height: 100vh; overflow-x: hidden; scroll-behavior: smooth; padding-bottom: env(safe-area-inset-bottom); }
-        .black-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s ease-in-out, visibility 1s; }
-        .black-screen.fade-out { opacity: 0; visibility: hidden; }
-        .cards-stage { position: relative; width: 100%; height: 340px; margin: 10px auto 30px; display: flex; justify-content: center; align-items: center; perspective: 1200px; }
-        .tarot-card { position: absolute; width: 150px; height: 250px; background: rgba(20,5,30,0.85); backdrop-filter: blur(12px); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.7s cubic-bezier(0.34,1.56,0.64,1); user-select: none; }
-        .card-inner-border { position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; pointer-events: none; transition: all 0.5s ease; }
-        .card-title { font-size: 3.5rem; font-weight: 900; transition: all 0.5s ease; }
-        .card-label { font-size: 0.7rem; letter-spacing: 0.3em; margin-top: 15px; color: #64748b; }
-        .pos-center { transform: translate(0,0) scale(1.15); z-index: 30; opacity: 1; box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px currentColor; }
-        .pos-left { transform: translate(-90px,-20px) rotate(-8deg) scale(0.85); z-index: 20; opacity: 0.5; filter: grayscale(40%); }
-        .pos-right { transform: translate(90px,-20px) rotate(8deg) scale(0.85); z-index: 10; opacity: 0.5; filter: grayscale(40%); }
-        .stage-hidden .tarot-card { transform: translateY(50px) scale(0.8); opacity: 0; }
-        .pos-center .card-inner-border { border-color: currentColor; box-shadow: inset 0 0 15px currentColor; }
-        .pos-center .card-title { text-shadow: 0 0 25px currentColor; }
-        .glass-panel { background: linear-gradient(180deg, rgba(20,5,30,0.6) 0%, rgba(10,2,15,0.3) 100%); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
-        .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; }
-        .panel-title { font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .panel-subtitle { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.2em; color: #64748b; }
-        .report-text { line-height: 1.8; text-align: justify; font-weight: 300; font-size: 0.95rem; color: #cbd5e1; white-space: pre-line; }
-        .energy-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-top: 8px; }
-        .energy-bar-fill { height: 100%; border-radius: 3px; transition: width 1.5s cubic-bezier(0.22,1,0.36,1); width: 0%; }
-        .slide-fade-enter-active, .slide-fade-leave-active { transition: all 0.5s ease; }
-        .slide-fade-enter-from { transform: translateX(20px); opacity: 0; }
-        .slide-fade-leave-to { transform: translateX(-20px); opacity: 0; }
-        .fade-up { opacity: 0; transform: translateY(20px); transition: all 1s ease; }
-        .fade-up.visible { opacity: 1; transform: translateY(0); }
-        .save-btn { background: linear-gradient(135deg, #2a113a 0%, #14051e 100%); border: 1px solid #d4af37; color: #d4af37; box-shadow: 0 0 20px rgba(212,175,55,0.2); transition: all 0.3s ease; }
-        .save-btn:active { transform: scale(0.95); }
+        :root { 
+            --c-bg: #05020a; 
+            --c-gold: #d4af37; 
+            --c-rose: #c5838d; 
+            --c-dark-gray: #1a1a1a;
+        }
+        body { 
+            background-color: var(--c-bg); 
+            color: #cbd5e1; 
+            font-family: 'Noto Serif SC', serif; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* 瀑布流模块卡片样式 */
+        .report-module-card {
+            background: linear-gradient(145deg, rgba(20,20,25,0.9) 0%, rgba(10,10,15,0.9) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        /* 卡片顶部的微弱高光线 */
+        .report-module-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent);
+        }
+
+        /* 呼吸灯加载动画 */
+        .glitch-text {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 解决换行符和文本对齐问题 */
+        .desc-text {
+            white-space: pre-wrap; /* 极度重要：确保 \n\n 能正常换行 */
+            line-height: 1.8;
+            text-align: justify;
+        }
     </style>
 </head>
 <body>
-<div id="report-app">
-    <div class="black-screen" :class="{ 'fade-out': !isBlackScreen }">
-        <i class="fa-solid fa-microchip fa-spin text-4xl text-[#d4af37] mb-4 drop-shadow-[0_0_15px_rgba(212,175,55,0.6)]"></i>
-        <div class="text-[#d4af37] tracking-[0.4em] text-xs font-bold uppercase mb-2">云端解析中...</div>
-        <div class="text-slate-500 tracking-[0.2em] text-[10px] font-mono">{{ loadingText }}</div>
+<div id="report-app" class="pb-24">
+    
+    <div v-if="isLoading" class="min-h-screen flex flex-col items-center justify-center px-6">
+        <div class="text-gold text-4xl mb-6"><i class="fa-solid fa-fingerprint"></i></div>
+        <h2 class="text-xl text-gray-200 mb-2 glitch-text">正在连线潜意识深网...</h2>
+        <p class="text-sm text-gray-500 text-center">{{ loadingText }}</p>
     </div>
 
-    <div v-if="reportData" class="container mx-auto px-4 pb-20 max-w-2xl pt-6">
-        <header class="text-center mb-2 fade-up" :class="{ 'visible': isRevealed }">
-            <div class="inline-block px-3 py-1 rounded-full bg-white/5 border border-[#d4af37]/30 text-[10px] tracking-widest text-[#d4af37] mb-3">ᛉ 潜意识观测报告 ᛟ</div>
-            <h1 class="text-2xl font-black text-white tracking-widest">{{ reportData.archetypeTitle }}</h1>
-            <p class="text-[10px] text-[#c5838d] mt-2 tracking-widest animate-pulse"><i class="fa-solid fa-hand-pointer mr-1"></i> 命盘已生成 · 点击卡牌观测多维切面</p>
-        </header>
+    <div v-else-if="errorMsg" class="min-h-screen flex flex-col items-center justify-center px-6">
+        <div class="text-rose text-4xl mb-6"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h2 class="text-xl text-rose mb-2">档案提取失败</h2>
+        <p class="text-sm text-gray-500 text-center">{{ errorMsg }}</p>
+        <button @click="retryFetch" class="mt-8 px-6 py-2 border border-gray-600 rounded text-gray-300">重新提取</button>
+    </div>
 
-        <div class="glass-panel fade-up mb-2 p-5 rounded-xl" :class="{ 'visible': isRevealed }">
-            <h3 class="text-xs font-bold text-white tracking-widest mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-chart-column text-[#d4af37]"></i> 本命能量矩阵 (基于36次深度抉择)
-            </h3>
-            <div class="space-y-3">
-                <div v-for="item in energyStats" :key="item.key">
-                    <div class="flex justify-between text-[10px] tracking-widest">
-                        <span :style="{ color: item.color }">{{ item.name }}</span>
-                        <span class="text-slate-400">{{ item.score }} 赫兹</span>
-                    </div>
-                    <div class="energy-bar-bg h-1.5">
-                        <div class="energy-bar-fill" :style="{ width: isRevealed ? item.percent + '%' : '0%', backgroundColor: item.color }"></div>
-                    </div>
-                </div>
+    <div v-else-if="reportData" class="max-w-2xl mx-auto px-4 pt-12">
+        
+        <div class="text-center mb-12 relative">
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gold opacity-10 blur-3xl rounded-full"></div>
+            <p class="text-xs tracking-widest text-gray-500 mb-3 uppercase">ZIGZAG · 绝对机密</p>
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold to-yellow-200 mb-4">
+                {{ reportData.title }}
+            </h1>
+            <div class="inline-block px-4 py-1 border border-gray-700 bg-gray-900/50 rounded-full text-sm text-gray-400">
+                <i class="fa-solid fa-dna mr-2 text-rose"></i>{{ reportData.mbti }}
             </div>
         </div>
 
-        <div class="cards-stage" :class="{ 'stage-hidden': !isRevealed }">
-            <div class="tarot-card" :class="cardPositions.sub" :style="{ color: elements[reportData.s].color }" @click="selectCard('sub')">
-                <div class="card-inner-border"></div>
-                <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.sub === 'pos-center'">羁绊</div>
-                <div class="card-title">{{ elements[reportData.s].char }}</div>
-                <div class="card-label">宿命羁绊</div>
-            </div>
-            <div class="tarot-card" :class="cardPositions.missing" :style="{ color: elements[reportData.w].color }" @click="selectCard('missing')">
-                <div class="card-inner-border"></div>
-                <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.missing === 'pos-center'">死穴</div>
-                <div class="card-title">{{ elements[reportData.w].char }}</div>
-                <div class="card-label">致命情劫</div>
-            </div>
-            <div class="tarot-card" :class="cardPositions.main" :style="{ color: elements[reportData.m].color }" @click="selectCard('main')">
-                <div class="card-inner-border"></div>
-                <div class="absolute -top-3 px-2 bg-[#05020a] text-[10px] font-bold tracking-widest" v-if="cardPositions.main === 'pos-center'">本源</div>
-                <div class="card-title">{{ elements[reportData.m].char }}</div>
-                <div class="card-label">命盘本源</div>
-            </div>
-        </div>
-
-        <div class="glass-panel fade-up mb-8" :class="{ 'visible': isRevealed }" style="transition-delay: 0.3s">
-            <transition name="slide-fade" mode="out-in">
-                <div :key="activeCard">
-                    <div class="panel-header border-b border-white/5 pb-3">
-                        <div class="panel-title text-base" :style="{ color: currentElementInfo.color }">
-                            <i :class="currentSectionData.icon" class="mr-1"></i>
-                            {{ currentSectionData.title }}
-                        </div>
-                    </div>
-                    <div class="report-text text-sm" v-html="currentSectionData.content"></div>
-                </div>
-            </transition>
-        </div>
-
-        <div class="glass-panel border-t border-[#d4af37]/30 fade-up mb-6" :class="{ 'visible': isRevealed }" style="transition-delay: 0.6s">
-            <h3 class="text-sm font-bold text-[#d4af37] tracking-widest mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-chess-knight"></i> 第四维度：【破局与干法】遇到危机怎么赢？
-            </h3>
-            <div class="space-y-6">
-                <div v-for="(act, idx) in reportData.d4_actions" :key="idx" class="border-l-2 border-[#d4af37]/50 pl-4">
-                    <div class="text-sm text-white font-bold mb-2">{{ act.title }}</div>
-                    <div class="text-xs text-slate-300 leading-relaxed mb-2"><span class="text-[#c5838d]">怎么做：</span>{{ act.action }}</div>
-                    <div class="text-xs text-[#d4af37] bg-[#d4af37]/10 p-2 rounded"><span class="font-bold">核心心法：</span>{{ act.core }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="glass-panel border-t border-[#c5838d]/30 fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 0.8s">
-            <h3 class="text-sm font-bold text-[#c5838d] tracking-widest mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-dna"></i> 第五维度：【进化路径】平时怎么修炼改命？
-            </h3>
-            <p class="text-xs text-slate-400 mb-4">你不需要变成另一个人，你只需要在几个关键节点上，做出不一样的选择。</p>
-            <ul class="space-y-4">
-                <li v-for="(prac, idx) in reportData.d5_practices" :key="idx" class="text-xs text-slate-300 leading-relaxed">
-                    <div class="font-bold text-white mb-1"><i class="fa-solid fa-diamond text-[#c5838d] text-[8px] mr-1"></i> {{ prac.title }}</div>
-                    <div>{{ prac.desc }}</div>
-                </li>
-            </ul>
-            <div class="mt-6 p-4 bg-[#c5838d]/10 border border-[#c5838d]/30 rounded text-xs text-[#c5838d] leading-relaxed text-center">
-                <div class="font-bold tracking-widest mb-1">终极心法</div>
-                {{ reportData.d5_ultimate }}
-            </div>
-        </div>
-
-        <div class="mt-12 text-center fade-up" :class="{ 'visible': isRevealed }" style="transition-delay: 1s">
-            <button @click="generatePoster" :disabled="isGeneratingPoster" class="save-btn w-full max-w-xs mx-auto py-4 rounded-full text-sm tracking-[0.2em] font-bold flex items-center justify-center gap-3">
-                <template v-if="isGeneratingPoster"><i class="fa-solid fa-circle-notch fa-spin"></i> 绘制星轨图中...</template>
-                <template v-else><i class="fa-solid fa-download"></i> 保存完整观测档案</template>
-            </button>
-            <footer class="text-center pt-10 pb-4">
-                <p class="text-[9px] text-slate-600 leading-relaxed max-w-sm mx-auto px-4 text-justify">三相坍缩 · 本报告基于你的潜意识博弈推演生成，命运的齿轮已开始转动。</p>
-                <div class="mt-4 text-[#4a154b] tracking-[0.3em] text-[10px] font-bold">ZIGZAG STUDIO</div>
-            </footer>
-        </div>
-
-        <transition name="slide-fade">
-            <div v-if="showPosterModal" class="fixed inset-0 z-[10000] bg-black/95 flex flex-col items-center justify-center p-6 backdrop-blur-md">
-                <div class="text-[#d4af37] text-xs tracking-widest mb-4 font-bold"><i class="fa-solid fa-camera mr-2"></i> 长按下方图片保存至相册</div>
-                <div class="overflow-y-auto w-full max-w-md rounded-lg shadow-[0_0_40px_rgba(212,175,55,0.2)] border border-[#d4af37]/30" style="max-height: 75vh;">
-                    <img :src="posterBase64" class="w-full block rounded-lg" alt="全息档案海报">
-                </div>
-                <button @click="showPosterModal = false" class="mt-8 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-        </transition>
-
-        <div id="hidden-poster-board" style="position: absolute; top: -9999px; left: -9999px; width: 800px; background: #05020a; color: #cbd5e1; padding: 60px; box-sizing: border-box;" v-if="reportData">
-            <div style="text-align: center; margin-bottom: 50px; border-bottom: 2px solid #d4af37; padding-bottom: 40px;">
-                <div style="color: #d4af37; font-size: 16px; letter-spacing: 0.4em; margin-bottom: 10px;">ZIGZAG ARCHETYPE DECODE</div>
-                <h1 style="font-size: 56px; font-weight: 900; color: #fff; letter-spacing: 0.2em; margin: 0;">{{ reportData.archetypeTitle }}</h1>
-            </div>
+        <div class="space-y-8">
             
-            <div v-for="(sec, key) in reportData.sections" :key="key" style="margin-bottom: 40px; padding: 30px; background: rgba(20,5,30,0.8); border-left: 4px solid #d4af37; border-radius: 8px;">
-                <div style="font-size: 24px; font-weight: bold; color: #d4af37; margin-bottom: 20px;">{{ sec.title }}</div>
-                <div style="font-size: 18px; line-height: 1.8; color: #e2e8f0; white-space: pre-line;" v-html="sec.content"></div>
+            <div class="report-module-card p-6 md:p-8">
+                <h3 class="text-lg md:text-xl font-bold text-gold mb-4">{{ reportData.module1_title }}</h3>
+                <div class="desc-text text-gray-300 text-sm md:text-base">{{ reportData.module1_desc }}</div>
             </div>
 
-            <div style="margin-bottom: 40px; padding: 30px; background: rgba(20,5,30,0.8); border-left: 4px solid #d4af37; border-radius: 8px;">
-                <div style="font-size: 24px; font-weight: bold; color: #d4af37; margin-bottom: 20px;">第四维度：【破局与干法】</div>
-                <div v-for="act in reportData.d4_actions" style="margin-bottom: 25px;">
-                    <div style="font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 10px;">{{ act.title }}</div>
-                    <div style="font-size: 16px; color: #e2e8f0; margin-bottom: 10px;"><span style="color: #c5838d;">怎么做：</span>{{ act.action }}</div>
-                    <div style="font-size: 16px; color: #d4af37; background: rgba(212,175,55,0.1); padding: 10px; border-radius: 4px;">核心心法：{{ act.core }}</div>
-                </div>
+            <div class="report-module-card p-6 md:p-8">
+                <h3 class="text-lg md:text-xl font-bold text-gold mb-4">{{ reportData.module2_title }}</h3>
+                <div class="desc-text text-gray-300 text-sm md:text-base">{{ reportData.module2_desc }}</div>
             </div>
 
-            <div style="margin-bottom: 40px; padding: 30px; background: rgba(20,5,30,0.8); border-left: 4px solid #c5838d; border-radius: 8px;">
-                <div style="font-size: 24px; font-weight: bold; color: #c5838d; margin-bottom: 20px;">第五维度：【进化路径】</div>
-                <div v-for="prac in reportData.d5_practices" style="margin-bottom: 20px; font-size: 16px; color: #e2e8f0; line-height: 1.6;">
-                    <strong style="color: #fff;">{{ prac.title }}：</strong>{{ prac.desc }}
-                </div>
-                <div style="margin-top: 30px; padding: 20px; background: rgba(197,131,141,0.1); border: 1px solid rgba(197,131,141,0.3); text-align: center; color: #c5838d; font-size: 18px; font-weight: bold;">
-                    终极心法：{{ reportData.d5_ultimate }}
-                </div>
+            <div class="report-module-card p-6 md:p-8">
+                <h3 class="text-lg md:text-xl font-bold text-gold mb-4">{{ reportData.module3_title }}</h3>
+                <div class="desc-text text-gray-300 text-sm md:text-base">{{ reportData.module3_desc }}</div>
             </div>
 
-            <div style="text-align: center; margin-top: 60px; border-top: 1px solid #333; padding-top: 30px;">
-                <h3 style="font-size: 24px; color: #fff; margin-bottom: 10px;">ZIGZAG STUDIO 潜意识观测系统</h3>
-                <p style="font-size: 14px; color: #64748b;">长按扫码，开启你的量子塔罗解码</p>
+            <div class="report-module-card p-6 md:p-8">
+                <h3 class="text-lg md:text-xl font-bold text-rose mb-4">{{ reportData.module4_title }}</h3>
+                <div class="desc-text text-gray-300 text-sm md:text-base">{{ reportData.module4_desc }}</div>
             </div>
+
+            <div class="report-module-card p-6 md:p-8">
+                <h3 class="text-lg md:text-xl font-bold text-rose mb-4">{{ reportData.module5_title }}</h3>
+                <div class="desc-text text-gray-300 text-sm md:text-base">{{ reportData.module5_desc }}</div>
+            </div>
+
+            <div class="report-module-card p-6 md:p-8 border-rose/30">
+                <h3 class="text-lg md:text-xl font-bold text-red-400 mb-4"><i class="fa-solid fa-skull mr-2"></i>{{ reportData.module6_title }}</h3>
+                <div class="desc-text text-gray-300 text-sm md:text-base">{{ reportData.module6_desc }}</div>
+            </div>
+
         </div>
+
+        <div class="mt-16 text-center pb-10">
+            <p class="text-xs text-gray-600 mb-6">ZIGZAG · THE END OF ILLUSION</p>
+            <button class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-gold to-yellow-600 text-black font-bold rounded shadow-lg shadow-gold/20 active:scale-95 transition-transform">
+                保存我的专属机密海报
+            </button>
+        </div>
+
     </div>
 </div>
 
 <script>
-    // 基础视觉配置
-    const elementsConfig = { 
-        rock: { char: '石', color: '#94a3b8', name: '石头' }, 
-        scissors: { char: '剪', color: '#c5838d', name: '剪刀' }, 
-        paper: { char: '布', color: '#d4af37', name: '布' } 
-    };
-
-    const { createApp, ref, computed, onMounted } = Vue;
+    const { createApp, ref, onMounted } = Vue;
 
     createApp({
         setup() {
-            const isBlackScreen = ref(true);
-            const loadingText = ref('Connecting to Quantum Core...');
-            const isRevealed = ref(false);
+            const isLoading = ref(true);
+            const loadingText = ref("正在突破表层意识防御...");
+            const errorMsg = ref("");
             const reportData = ref(null);
-            const elements = elementsConfig;
-            const energyStats = ref([]);
+
+            // 动态改变加载文案，增加黑客解码的逼格
+            const loadingTexts = [
+                "正在突破表层意识防御...",
+                "正在提取利益置换模型...",
+                "正在生成黑森林猎场雷达...",
+                "正在剥离社会道德伪装...",
+                "档案解码即将完成..."
+            ];
             
-            const isGeneratingPoster = ref(false);
-            const showPosterModal = ref(false);
-            const posterBase64 = ref('');
-            
-            const activeCard = ref('main');
-            const cardPositions = ref({ main: 'pos-center', sub: 'pos-left', missing: 'pos-right' });
+            let textIndex = 0;
+            const textInterval = setInterval(() => {
+                textIndex = (textIndex + 1) % loadingTexts.length;
+                loadingText.value = loadingTexts[textIndex];
+            }, 1200);
 
-            onMounted(() => {
-                const params = new URLSearchParams(window.location.search);
-                const code = params.get('code') || 'DEMO_MODE';
-                const g = params.get('g') === 'male' ? 'male' : 'female';
-                const m = params.get('m') || 'rock';
-                const s = params.get('s') || 'paper';
-                const w = params.get('w') || 'scissors';
+            const fetchReport = async () => {
+                isLoading.value = true;
+                errorMsg.value = "";
                 
-                // 获取具体分数
-                const sRock = parseInt(params.get('scoreRock')) || 14;
-                const sScissors = parseInt(params.get('scoreScissors')) || 14;
-                const sPaper = parseInt(params.get('scorePaper')) || 8;
-                const maxScore = Math.max(sRock, sScissors, sPaper, 36); 
-                const scoresObj = { rock: sRock, scissors: sScissors, paper: sPaper };
-                
-                // 设置前台柱状图数据
-                energyStats.value = [
-                    { key: 'rock', name: '磐石底座', score: sRock, color: '#94a3b8', percent: (sRock/maxScore)*100 },
-                    { key: 'scissors', name: '锋刃张力', score: sScissors, color: '#c5838d', percent: (sScissors/maxScore)*100 },
-                    { key: 'paper', name: '覆天力场', score: sPaper, color: '#d4af37', percent: (sPaper/maxScore)*100 }
-                ];
-
-                // 页面加载后，直接呼叫云端后端获取文案
-                fetchReportData(m, s, w, g, code, scoresObj);
-            });
-
-            // ==========================================
-            // 核心：请求 Supabase Edge Function 获取千字解析
-            // ==========================================
-            const fetchReportData = async (m, s, w, g, code, scores) => {
                 try {
-                    loadingText.value = 'Syncing Dark Subconscious Data...';
+                    // 1. 从 URL 获取前端计算好的参数
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const main = urlParams.get('m');
+                    const second = urlParams.get('s');
+                    const gender = urlParams.get('g');
 
-                    // 注意链接结尾是 report-decode！
-const response = await fetch('https://ifoynvhjbrmvsomkvnym.supabase.co/functions/v1/report-decode', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlmb3ludmhqYnJtdnNvbWt2bnltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMzU4NDIsImV4cCI6MjA4OTgxMTg0Mn0.SLJdSDbeKcndts33y9dMLWISrREm1e8x_Qs7IuH-bKo' // 记得贴入
-    },
-    body: JSON.stringify({ m, s, w, g, scores })
-});
-
-                    if (!response.ok) {
-                        throw new Error('云端推演失败，请检查网络');
+                    if (!main || !gender) {
+                        throw new Error("参数丢失，无法锁定观测目标。请重新进行测试。");
                     }
 
-                    const data = await response.json();
-
-                    // ⚠️ 关键修复：这里全部使用后端传回来的 data，彻底消灭本地的 getDimension 函数
-                    reportData.value = {
-                        m, s, w, g, code,
-                        archetypeTitle: `${elements[m].char}${elements[s].char}${g === 'male' ? '男' : '女'}`,
-                        sections: {
-                            main: { title: `第一维度：【命盘本源】你是一台怎样的情感机器？`, icon: 'fa-solid fa-cube', content: data.d1_content, elKey: m },
-                            sub: { title: `第二维度：【宿命羁绊】你注定会招惹什么样的人？`, icon: 'fa-solid fa-mask', content: data.d2_content, elKey: s },
-                            missing: { title: `第三维度：【致命情劫】你这辈子最可能栽在哪里？`, icon: 'fa-solid fa-link-slash', content: data.d3_content, elKey: w }
+                    // 2. 调用你刚刚部署好的 Edge Function 接口
+                    // ⚠️ 注意：这里替换成你真实的 Supabase Edge Function URL！
+                    const FUNCTION_URL = "https://你的supabase项目前缀.supabase.co/functions/v1/report-decode";
+                    
+                    const response = await fetch(FUNCTION_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 如果你的函数没有开启 no-verify-jwt，这里需要加 Anon Key
+                            // 'Authorization': `Bearer 你的AnonKey`
                         },
-                        d4_actions: data.d4_actions,
-                        d5_practices: data.d5_practices,
-                        d5_ultimate: data.d5_ultimate
-                    };
+                        body: JSON.stringify({
+                            m: main,
+                            s: second,
+                            g: gender
+                        })
+                    });
 
-                    // 延迟动画，完美展现
-                    setTimeout(() => { loadingText.value = 'Rendering Tri-Phase Stage...'; }, 600);
-                    setTimeout(() => { isBlackScreen.value = false; setTimeout(() => { isRevealed.value = true; }, 800); }, 1200);
+                    if (!response.ok) {
+                        throw new Error(`云端大脑拒绝访问 (Status: ${response.status})`);
+                    }
 
-                } catch (error) {
-                    console.error('获取报告失败:', error);
-                    loadingText.value = 'Data Sync Failed. Please Refresh.';
-                    alert('获取云端解析失败，请检查你的 Supabase Edge Function 是否部署成功。');
+                    const resJson = await response.json();
+                    
+                    if (resJson.success && resJson.data) {
+                        reportData.value = resJson.data;
+                    } else {
+                        throw new Error(resJson.error || "云端返回数据格式异常");
+                    }
+
+                } catch (err) {
+                    errorMsg.value = err.message;
+                } finally {
+                    clearInterval(textInterval);
+                    // 为了展示酷炫的加载动画，强制延迟 1.5 秒再显示报告
+                    setTimeout(() => {
+                        isLoading.value = false;
+                    }, 1500);
                 }
             };
 
-            const selectCard = (cardKey) => {
-                if (activeCard.value === cardKey) return;
-                const oldCenterCard = activeCard.value;
-                const clickedCardPos = cardPositions.value[cardKey];
-                cardPositions.value[oldCenterCard] = clickedCardPos;
-                cardPositions.value[cardKey] = 'pos-center';
-                activeCard.value = cardKey;
+            const retryFetch = () => {
+                fetchReport();
             };
-            
-            const currentSectionData = computed(() => reportData.value ? reportData.value.sections[activeCard.value] : {});
-            const currentElementInfo = computed(() => {
-                if (!reportData.value) return {};
-                return elements[currentSectionData.value.elKey];
+
+            onMounted(() => {
+                fetchReport();
             });
 
-            const generatePoster = async () => {
-                isGeneratingPoster.value = true;
-                try {
-                    const board = document.getElementById('hidden-poster-board');
-                    const canvas = await html2canvas(board, { backgroundColor: '#05020a', scale: 2, useCORS: true });
-                    posterBase64.value = canvas.toDataURL('image/jpeg', 0.85);
-                    showPosterModal.value = true;
-                } catch (error) { console.error(error); alert('海报生成失败'); }
-                finally { isGeneratingPoster.value = false; }
-            };
-
             return {
-                isBlackScreen, loadingText, isRevealed, reportData, elements, energyStats,
-                activeCard, cardPositions, selectCard, currentSectionData, currentElementInfo,
-                isGeneratingPoster, showPosterModal, posterBase64, generatePoster
+                isLoading,
+                loadingText,
+                errorMsg,
+                reportData,
+                retryFetch
             };
         }
     }).mount('#report-app');
